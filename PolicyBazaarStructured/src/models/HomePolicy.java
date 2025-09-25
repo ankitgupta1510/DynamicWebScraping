@@ -1,0 +1,19 @@
+package models;
+
+public class HomePolicy implements Policy{
+	private String policyName, logoURL, premiumPerYear;
+	
+	public HomePolicy(String policyName,String logoURL,String premiumPerYear) {
+		this.policyName = policyName ;
+		this.logoURL = logoURL;
+		this.premiumPerYear  = premiumPerYear;
+	}
+	
+	@Override
+	public
+	String [] toArray() {
+		return new String[] {policyName,logoURL,premiumPerYear};
+		
+	}
+
+}

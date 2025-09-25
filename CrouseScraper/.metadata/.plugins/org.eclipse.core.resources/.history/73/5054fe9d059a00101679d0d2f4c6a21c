@@ -1,0 +1,43 @@
+package flow;
+
+import org.jsoup.Connection;
+import org.jsoup.Jsoup;
+import org.jsoup.Connection.Response;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
+public class MainTestCheck {
+
+    public static void main(String[] args) {
+        String bikeUrl = "https://www.policybazaar.com/policybazzar-home/callservice.php";
+        String bikePayload = "{"
+                + "\"task\":\"homeinsuranceTopplanwidget\","
+                + "\"visitId\":\"12345\""
+                + "}";
+
+
+        try {
+            Response response = Jsoup.connect(bikeUrl)
+                .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64)")
+                .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
+                .header("Accept-Language", "en-US,en;q=0.5")
+                .header("Content-Type", "application/json")
+                .ignoreContentType(true)
+                .timeout(15000)
+                .requestBody(bikePayload)
+                .method(Connection.Method.POST)
+                .execute();
+                
+            String htmlContent = response.body();
+            Document doc = Jsoup.parse(htmlContent);
+            
+     
+    
+   
+                
+            } catch (Exception e) {
+                System.err.println("Error processing plan: " + e.getMessage());
+            }
+        }
+}

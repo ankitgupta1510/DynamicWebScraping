@@ -1,0 +1,31 @@
+package crawlerDesign;
+
+
+public class ProductData {
+    private String category;
+    private String name;
+    private double priceMRP;
+    private double weight;
+
+    
+    public ProductData(String category, String name,double priceMRP,double weight) {
+        this.category = category;
+        this.name = name;
+        this.priceMRP = priceMRP;
+        this.weight = weight;
+        
+    }
+    
+    
+    public String toString() {
+        return String.format("Category: %s | Product: %s |MRP: ₹%.2f |Weight: %f", category, name, priceMRP,weight);
+    }
+    
+    
+    public String getCategory() { return category; }
+    public String getName() { return name; }
+    public double getPriceMRP() { return priceMRP; }
+    public double getWWeight() {return weight;}
+    
+}
+

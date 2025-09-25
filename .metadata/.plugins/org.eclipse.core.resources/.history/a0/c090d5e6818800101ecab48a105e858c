@@ -1,0 +1,41 @@
+package web;
+
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
+public class WebScrapper {
+
+	public static void main(String[] args) {
+		String url = "https://books.toscrape.com/";
+		int count=0;
+		try {
+			
+			Document doc;
+			doc = Jsoup
+					.connect(url)
+					.get();
+			
+			
+			
+//			Elements products = doc.select("vertical-card_title__pMGg9");
+			Elements products = doc.select(".product_pod h3 a");
+			
+			
+			for(Element product:products) {
+//				String name = product.text();
+//				Element parent = product.parent().parent();
+//				String price = parent.select("vertical-card_amount__80Zwk").text();
+//				
+				System.out.println("Product: "+product.attr("title"));
+				count++;
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		
+		System.out.println(count);
+	}
+
+}

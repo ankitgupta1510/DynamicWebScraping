@@ -1,0 +1,332 @@
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.io.*;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+
+public class Apptest {
+    
+    private static final String BASE_URL = "https://www.coursera.org";
+    private static final int DELAY_BETWEEN_REQUESTS = 2000; // 2 seconds
+    private static final int MAX_RETRIES = 3;
+    
+    // Categories to scrape
+    private static final Map<String, String> CATEGORIES = Map.of(
+        "Information Technology", "Information%20Technology",
+        "Data Science", "Data%20Science", 
+        "Computer Science", "Computer%20Science",
+        "Business", "Business"
+    );
+    
+    public static void main(String[] args) {
+        Apptest scraper = new Apptest();
+        
+        for (Map.Entry<String, String> category : CATEGORIES.entrySet()) {
+            System.out.println("\n=== Scraping " + category.getKey() + " Courses ===");
+            List<Course> courses = scraper.scrapeCoursesByCategory(category.getValue());
+            scraper.saveCourses(courses, category.getKey());
+            
+            // Delay between categories
+            try {
+                Thread.sleep(DELAY_BETWEEN_REQUESTS);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
+            }
+        }
+    }
+    
+    public List<Course> scrapeCoursesByCategory(String category) {
+        List<Course> allCourses = new ArrayList<>();
+        int pageIndex = 1;
+        boolean hasMorePages = true;
+        
+        while (hasMorePages && pageIndex <= 10) { // Limit to 10 pages to avoid infinite loop
+            System.out.println("Scraping page " + pageIndex + "...");
+            
+            String url = buildSearchUrl(category, pageIndex);
+            List<Course> pageCourses = scrapeCoursesFromPage(url);
+            
+            if (pageCourses.isEmpty()) {
+                hasMorePages = false;
+            } else {
+                allCourses.addAll(pageCourses);
+                System.out.println("Found " + pageCourses.size() + " courses on page " + pageIndex);
+                pageIndex++;
+                
+                // Delay between pages
+                try {
+                    Thread.sleep(DELAY_BETWEEN_REQUESTS);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+            }
+        }
+        
+        System.out.println("Total courses scraped: " + allCourses.size());
+        return allCourses;
+    }
+    
+    private String buildSearchUrl(String category, int pageIndex) {
+        // Build URL for professional certificates search with pagination
+        return BASE_URL + "/search" +
+               "?query=" + category +
+               "&productTypeDescription=Professional%20Certificates" +
+               "&sortBy=BEST_MATCH" +
+               "&index=" + ((pageIndex - 1) * 12); // Assuming 12 items per page
+    }
+    
+    private List<Course> scrapeCoursesFromPage(String url) {
+        List<Course> courses = new ArrayList<>();
+        int retries = 0;
+        
+        while (retries < MAX_RETRIES) {
+            try {
+                System.out.println("Fetching: " + url);
+                
+                Document doc = Jsoup.connect(url)
+                    .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
+                    .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
+                    .header("Accept-Language", "en-US,en;q=0.5")
+                    .header("Accept-Encoding", "gzip, deflate")
+                    .header("Connection", "keep-alive")
+                    .timeout(30000)
+                    .get();
+                
+                // Multiple selectors for course cards
+                Elements courseCards = doc.select("div[data-testid='search-results-item']");
+                
+                if (courseCards.isEmpty()) {
+                    // Alternative selectors
+                    courseCards = doc.select("div.cds-CommonCard-container");
+                    if (courseCards.isEmpty()) {
+                        courseCards = doc.select("div.rc-SearchResultsItem");
+                        if (courseCards.isEmpty()) {
+                            courseCards = doc.select("div[class*='SearchResults']");
+                        }
+                    }
+                }
+                
+                System.out.println("Found " + courseCards.size() + " course cards");
+                
+                for (Element card : courseCards) {
+                    Course course = extractCourseInfo(card);
+                    if (course != null && course.getTitle() != null) {
+                        courses.add(course);
+                    }
+                }
+                
+                break; // Success, exit retry loop
+                
+            } catch (Exception e) {
+                retries++;
+                System.err.println("Error scraping page (attempt " + retries + "): " + e.getMessage());
+                
+                if (retries < MAX_RETRIES) {
+                    try {
+                        Thread.sleep(DELAY_BETWEEN_REQUESTS * retries);
+                    } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                        break;
+                    }
+                }
+            }
+        }
+        
+        return courses;
+    }
+    
+    private Course extractCourseInfo(Element card) {
+        Course course = new Course();
+        
+        try {
+            // Extract title
+            Element titleElement = card.selectFirst("h3, h2, .rc-NamedSearchResult__title, [data-testid='search-result-title']");
+            if (titleElement != null) {
+                course.setTitle(titleElement.text().trim());
+            }
+            
+            // Extract provider/university
+            Elements providerElements = (Elements) card.select("p, span, div").stream()
+                .filter(el -> el.text().matches(".*(?i)(university|college|google|ibm|meta|amazon|microsoft).*"))
+                .toList();
+            
+            if (!providerElements.isEmpty()) {
+                course.setProvider(providerElements.get(0).text().trim());
+            }
+            
+            // Extract rating
+            Element ratingElement = card.selectFirst("[data-testid='ratings-count-without-asterisks'], .ratings-text");
+            if (ratingElement != null) {
+                String ratingText = ratingElement.text();
+                course.setRating(extractRating(ratingText));
+            }
+            
+            // Extract skills
+            Elements skillElements = (Elements) card.select("span, p").stream()
+                .filter(el -> el.text().toLowerCase().contains("skills") || 
+                             el.text().toLowerCase().contains("learn"))
+                .toList();
+            
+            if (!skillElements.isEmpty()) {
+                course.setSkills(skillElements.get(0).text().trim());
+            }
+            
+            // Extract duration
+            Elements durationElements = (Elements) card.select("span, p").stream()
+                .filter(el -> el.text().matches(".*\\d+.*(?i)(month|week|hour).*"))
+                .toList();
+            
+            if (!durationElements.isEmpty()) {
+                course.setDuration(durationElements.get(0).text().trim());
+            }
+            
+            // Extract link
+            Element linkElement = card.selectFirst("a[href]");
+            if (linkElement != null) {
+                String href = linkElement.attr("href");
+                course.setUrl(href.startsWith("http") ? href : BASE_URL + href);
+            }
+            
+            // Extract level
+            Elements levelElements = (Elements) card.select("span, p").stream()
+                .filter(el -> el.text().toLowerCase().matches(".*(beginner|intermediate|advanced).*"))
+                .toList();
+            
+            if (!levelElements.isEmpty()) {
+                course.setLevel(levelElements.get(0).text().trim());
+            }
+            
+        } catch (Exception e) {
+            System.err.println("Error extracting course info: " + e.getMessage());
+        }
+        
+        return course;
+    }
+    
+    private String extractRating(String text) {
+        if (text == null) return null;
+        
+        // Extract rating like "4.7" from text
+        java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("(\\d+\\.\\d+)");
+        java.util.regex.Matcher matcher = pattern.matcher(text);
+        
+        if (matcher.find()) {
+            return matcher.group(1);
+        }
+        
+        return null;
+    }
+    
+    public void saveCourses(List<Course> courses, String category) {
+        if (courses.isEmpty()) {
+            System.out.println("No courses to save for category: " + category);
+            return;
+        }
+        
+        String filename = category.replaceAll("[^a-zA-Z0-9]", "_") + "_courses.csv";
+        
+        try (PrintWriter writer = new PrintWriter(new FileWriter(filename, StandardCharsets.UTF_8))) {
+            // CSV Header
+            writer.println("Title,Provider,Rating,Duration,Level,Skills,URL");
+            
+            for (Course course : courses) {
+                writer.printf("\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\"%n",
+                    escapeCSV(course.getTitle()),
+                    escapeCSV(course.getProvider()),
+                    escapeCSV(course.getRating()),
+                    escapeCSV(course.getDuration()),
+                    escapeCSV(course.getLevel()),
+                    escapeCSV(course.getSkills()),
+                    escapeCSV(course.getUrl())
+                );
+            }
+            
+            System.out.println("Saved " + courses.size() + " courses to " + filename);
+            
+        } catch (IOException e) {
+            System.err.println("Error saving courses to file: " + e.getMessage());
+        }
+        
+        // Also print summary
+        System.out.println("\n--- " + category + " Summary ---");
+        courses.forEach(course -> {
+            System.out.println("Title: " + course.getTitle());
+            System.out.println("Provider: " + course.getProvider());
+            System.out.println("Rating: " + course.getRating());
+            System.out.println("---");
+        });
+    }
+    
+    private String escapeCSV(String value) {
+        if (value == null) return "";
+        return value.replace("\"", "\"\"");
+    }
+}
+
+// Course class to hold course data
+class Course {
+    private String title;
+    private String provider;
+    private String rating;
+    private String duration;
+    private String level;
+    private String skills;
+    private String url;
+    
+    // Constructors
+    public Course() {}
+    
+    public Course(String title, String provider, String rating, String duration, 
+                  String level, String skills, String url) {
+        this.title = title;
+        this.provider = provider;
+        this.rating = rating;
+        this.duration = duration;
+        this.level = level;
+        this.skills = skills;
+        this.url = url;
+    }
+    
+    // Getters and Setters
+    public String getTitle() { return title; }
+    public void setTitle(String title) { this.title = title; }
+    
+    public String getProvider() { return provider; }
+    public void setProvider(String provider) { this.provider = provider; }
+    
+    public String getRating() { return rating; }
+    public void setRating(String rating) { this.rating = rating; }
+    
+    public String getDuration() { return duration; }
+    public void setDuration(String duration) { this.duration = duration; }
+    
+    public String getLevel() { return level; }
+    public void setLevel(String level) { this.level = level; }
+    
+    public String getSkills() { return skills; }
+    public void setSkills(String skills) { this.skills = skills; }
+    
+    public String getUrl() { return url; }
+    public void setUrl(String url) { this.url = url; }
+    
+    @Override
+    public String toString() {
+        return String.format("Course{title='%s', provider='%s', rating='%s', duration='%s', level='%s'}",
+                title, provider, rating, duration, level);
+    }
+}
+
+// Maven dependencies needed:
+/*
+<dependency>
+    <groupId>org.jsoup</groupId>
+    <artifactId>jsoup</artifactId>
+    <version>1.16.2</version>
+</dependency>
+*/

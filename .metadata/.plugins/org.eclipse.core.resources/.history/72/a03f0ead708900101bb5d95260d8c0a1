@@ -1,0 +1,70 @@
+package web;
+
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+public class Extractjson {
+    public static void main(String[] args) {
+        try {
+            
+            String content = Files.readString(Paths.get("data2.json"));
+            JSONObject obj = new JSONObject(content);
+
+            JSONObject pageProps = obj.getJSONObject("pageProps");
+
+            
+            JSONObject plpData = pageProps.getJSONObject("plpData");
+            JSONArray products = plpData.getJSONArray("products");
+            int count=0;
+
+            for (int i = 0; i < products.length(); i++) {
+            	count++;
+                JSONObject product = products.getJSONObject(i);
+
+                // Extract categoryName and product name
+                String categoryName = product.getString("categoryName");
+                String productName = product.getString("name");
+
+                // Print category and product name
+                System.out.println("Category: " + categoryName);
+                System.out.println("Product: " + productName);
+
+                // Loop through SKUs
+                JSONArray skus = product.getJSONArray("sKUs");
+                for (int j = 0; j < skus.length(); j++) {
+                    JSONObject sku = skus.getJSONObject(j);
+
+                    // Get variant weight as string
+                    String variantWtStr = sku.optString("variantTextValue", "0 g").replace("g", "").trim();
+
+                    // Parse to double safely
+                    double variantWt = 0.0;
+                    try {
+                        variantWt = Double.parseDouble(variantWtStr);
+                    } catch (NumberFormatException e) {
+                        System.out.println("Warning: Could not parse variant weight for SKU " + (j+1));
+                    }
+
+                    double priceMRP = sku.optDouble("priceMRP", 0.0);
+                    double priceSALE = sku.optDouble("priceSALE", 0.0);
+
+                    System.out.println("  SKU " + (j+1) + ":");
+                    System.out.println("    Variant Weight: " + variantWt + " g");
+                    System.out.println("    MRP: ₹" + priceMRP);
+                    System.out.println("    Sale Price: ₹" + priceSALE);
+                    
+                }
+                
+
+
+                System.out.println("-----------");
+            }System.out.println(count);
+
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+        }
+    }
+}

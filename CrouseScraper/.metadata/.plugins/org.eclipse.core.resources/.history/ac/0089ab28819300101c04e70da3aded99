@@ -1,0 +1,83 @@
+package CollegeScraper;
+
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+import java.io.IOException;
+import java.util.Map;
+
+public class MainApp {
+    public static void main(String[] args) throws IOException {
+    	
+    	Map<String ,String> urlMap = BrowseByStream.streamScraper();
+    	
+    	for(String urlString :urlMap.values()) {
+    		
+    	
+    	
+    	
+//        String baseUrl = "https://bschool.careers360.com/colleges/ranking";
+        boolean hasData = true;
+        int pageNum=1;
+
+        while(hasData) {
+        	
+        	String url ="";
+        	
+        	if(urlString == "https://studyabroad.careers360.com/") {
+        		 url = urlString+"/colleges/ranking"+"?page="+pageNum;
+        	}
+        	else {
+        		 url = urlString+"/colleges/ranking"+"?page="+pageNum;
+        	}
+        	
+        
+        
+        
+        Document doc = Jsoup.connect(url)
+                .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36")
+                .timeout(10000)
+                .get();
+        
+        
+        Elements collegeCards = doc.select("div.card_block");
+        if (collegeCards.size() == 0) {
+            hasData = false;
+            System.out.println("No more data found. Ending pagination.");
+            break;
+        }
+        
+
+      System.out.println("Found " + collegeCards.size() + " colleges:");
+        if(pageNum==1)hasData=false;
+        
+        for(Element card: collegeCards) {
+        	String collegeName = card.select("h3.college_name_heading").text();
+
+            String fees = card.select("li.college-fees-text").text();
+            
+            String ownership = card.select("#college-list > div > div > div.facet-tuple-inner-container > div.left_side_tupple > div.tupple_top_block > div.tupple_right_block.d-none.d-lg-block > div > span:nth-child(2) > p.college-rank-rating").text();
+//            Elements collegeOwnership = doc.select(".tupple_right_block .college-rank-rating");
+            
+            String location = collegeName.substring(collegeName.lastIndexOf(" ") + 1);
+
+            System.out.println("College: " + collegeName +
+                    " || Fee: " + fees +
+                    " || Ownership: " + ownership +
+                    " || Location: " + location);
+        }
+        	
+        }
+        
+        pageNum++;
+        try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			
+			e.printStackTrace();
+		}
+        
+    	}
+    }
+}

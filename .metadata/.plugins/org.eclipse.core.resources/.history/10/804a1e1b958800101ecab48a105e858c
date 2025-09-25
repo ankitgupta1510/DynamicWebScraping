@@ -1,0 +1,54 @@
+package web;
+
+import org.jsoup.Connection;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+
+public class Webscrapper2 {
+	public static void main(String[] args) {
+		 
+		    try {
+		        // Based on your network tab, try these patterns:
+		        String[] possibleAPIs = {
+		            "https://digital.dmart.in/searchHintDataStoreId-10151",
+		            "https://digital.dmart.in/offerDataV2StoreId-10151", 
+		            "https://digital.dmart.in/productDataStoreId-10151"
+		        };
+		        
+		        for (String apiUrl : possibleAPIs) {
+		            System.out.println("\n=== TRYING API: " + apiUrl + " ===");
+		            
+		            try {
+		            	 String specificAPI = "https://digital.dmart.in/searchHintDataStoreId-10151";
+		                 
+		                 Connection.Response response = Jsoup.connect(specificAPI)
+		                     .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64)")
+		                     .header("Accept", "application/json")
+		                     .header("Referer", "https://www.dmart.in/category/biscuits---cookies-aesc-biscuitsandcookies")
+		                     .header("X-Requested-With", "XMLHttpRequest")
+		                     .ignoreContentType(true)
+		                     .method(Connection.Method.GET)
+		                     .execute();
+		                     
+		                 System.out.println("Status Code: " + response.statusCode());
+		                 System.out.println("Content-Type: " + response.contentType());
+		                 System.out.println("Response Headers: " + response.headers());
+		                 
+		                 String responseBody = response.body();
+		                 System.out.println("\nResponse Body:");
+		                 System.out.println(responseBody);
+		                
+		            } catch (Exception e) {
+		                System.out.println("Failed: " + e.getMessage());
+		            }
+		        }
+		        
+		    } catch (Exception e) {
+		        e.printStackTrace();
+		    }
+		
+		
+		
+	}
+
+}

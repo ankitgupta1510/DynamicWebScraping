@@ -1,0 +1,19 @@
+package crawlerDesign;
+
+
+import java.util.List;
+
+public class AppMain {
+    public static void main(String[] args) {
+        
+    	ScrapingLogic scraper = new ScrapingLogic();
+        List<ProductData> reqProducts = scraper.scrapeAllProducts();
+        
+        System.out.println("Total products= " + reqProducts.size());
+        
+        for (ProductData product : reqProducts) {
+            System.out.println(product);
+        }
+    }
+}
+

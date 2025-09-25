@@ -1,0 +1,39 @@
+package flow;
+
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+import java.io.IOException;
+
+public class TestApp {
+
+    public static void main(String[] args) throws IOException {
+        
+        // 1. SAHI API URL use karein
+        String apiUrl = "https://health.policybazaar.com/insurer-list/v2?product_id=2";
+        // String apiUrl = "https://www.policybazaar.com/health-insurance/health-insurance-india/"; // <-- YEH GALAT HAI
+
+        // 2. Jsoup se connect karke data (HTML) lo
+        Document doc = Jsoup.connect(apiUrl)
+                .ignoreContentType(true) // Yeh zaroori hai
+                .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+                .timeout(15000)
+                .get();
+
+        // 3. SAHI SELECTOR use karein
+        Elements insuranceCards = doc.select("div.list-card");
+        // Elements insuranceCards = doc.select("health-insurance-plans"); // <-- YEH GALAT HAI
+
+        System.out.println("Found " + insuranceCards.size() + " plans:\n");
+
+        // 4. Har card se details nikal kar print karo
+        for (Element card : insuranceCards) {
+            String planName = card.select("div.plan_name").text();
+            String premium = card.select("div.starting_at").text();
+            String hospitals = card.select("div.cashless_hospitals").text();
+
+            System.out.println("Plan: " + planName + " | Premium: " + premium + " | " + hospitals);
+        }
+    }
+}

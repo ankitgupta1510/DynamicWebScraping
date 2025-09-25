@@ -1,0 +1,36 @@
+package flow;
+
+import org.jsoup.Connection.Method;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+
+public class MainApp {
+
+    public static void main(String[] args) {
+
+        String url = "https://www.policybazaar.com/services/gettermservices.php";
+        String payload = "{\"task\":\"topplanswithfeatureandfilter\",\"isfilter\":1,"
+                + "\"pagename\":\"Buy Best Term Insurance Plan <sup>~</sup>\","
+                + "\"isnri\":false}";
+
+        try {
+            Document doc = Jsoup.connect(url)
+                    .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                            + "AppleWebKit/537.36 (KHTML, like Gecko) "
+                            + "Chrome/120.0.0.0 Safari/537.36")
+                    .timeout(15000)  // 15 sec timeout
+                    .header("Content-Type", "application/json") // important
+                    .ignoreContentType(true) // kyunki yeh JSON return karega
+                    .requestBody(payload) // yaha payload set hoga
+                    .method(Method.POST) // POST request
+                    .execute() // execute karna hoga
+                    .parse();
+
+            // Response print karo
+            System.out.println(doc.text());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}

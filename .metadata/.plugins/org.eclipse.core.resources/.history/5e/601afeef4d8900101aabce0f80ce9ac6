@@ -1,0 +1,44 @@
+package web;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.JsonNode;
+import java.io.File;
+public class Extarctjson {
+    public static void main(String[] args) {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode root = mapper.readTree(new File("data.json"));
+            
+            // Basic info
+            System.out.println("🔢 Total Records: " + root.get("totalRecords").asInt());
+            System.out.println("📍 Default Zip: " + root.get("defaultzip").asText());
+            
+            // catArray explore karo
+            JsonNode catArray = root.get("catArray");
+            System.out.println("\n📂 catArray info:");
+            System.out.println("   Size: " + catArray.size());
+            
+            if (catArray.size() > 0) {
+                System.out.println("   First item keys:");
+                catArray.get(0).fieldNames().forEachRemaining(key -> 
+                    System.out.println("     - " + key)
+                );
+            }
+            
+            // MarketingSpotData explore karo  
+            JsonNode marketingData = root.get("MarketingSpotData");
+            System.out.println("\n🎯 MarketingSpotData info:");
+            System.out.println("   Size: " + marketingData.size());
+            
+            if (marketingData.size() > 0) {
+                System.out.println("   First item keys:");
+                marketingData.get(0).fieldNames().forEachRemaining(key -> 
+                    System.out.println("     - " + key)
+                );
+            }
+            
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+        }
+    }
+}

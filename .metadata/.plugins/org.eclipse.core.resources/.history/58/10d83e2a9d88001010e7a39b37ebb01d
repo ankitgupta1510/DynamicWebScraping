@@ -1,0 +1,91 @@
+package web;
+
+import java.util.ArrayList;
+import java.util.List;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
+public class Webscrapper2 {
+
+    public static void main(String[] args) {
+        String url = "https://www.dmart.in/category/biscuits---cookies-aesc-biscuitsandcookies";
+        
+        try {
+            Document doc = Jsoup.connect(url)
+                    .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
+                    .timeout(10000)
+                    .get();
+
+            System.out.println("Page title: " + doc.title());
+            System.out.println("HTML length: " + doc.html().length());
+
+            // Try multiple selector strategies
+            List<Elements> selectorAttempts = new ArrayList<>();
+            
+            // Strategy 1: Target product cards with multiple class approach
+            selectorAttempts.add(doc.select("div[class*='vertical-card']"));
+            selectorAttempts.add(doc.select("div[class*='product']"));
+            selectorAttempts.add(doc.select("div[class*='MuiGrid-item']"));
+            
+            // Strategy 2: Look for common product container patterns
+            selectorAttempts.add(doc.select("article"));
+            selectorAttempts.add(doc.select("div[data-testid*='product']"));
+            
+            for (int i = 0; i < selectorAttempts.size(); i++) {
+                Elements products = selectorAttempts.get(i);
+                System.out.println("Strategy " + (i + 1) + " found: " + products.size() + " elements");
+                
+                if (products.size() > 0) {
+                    extractProductInfo(products, i + 1);
+                }
+            }
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
+    private static void extractProductInfo(Elements products, int strategyNumber) {
+        System.out.println("\n--- Strategy " + strategyNumber + " Results ---");
+        int count = 0;
+        
+        for (Element product : products) {
+            // Try multiple ways to extract product name
+            String name = extractText(product, new String[]{
+                ".vertical-card_title__pMGg9",
+                "h3", "h4", "h5",
+                "[class*='title']",
+                "[class*='name']"
+            });
+            
+            // Try multiple ways to extract price
+            String price = extractText(product, new String[]{
+                ".price", "[class*='price']",
+                "[class*='amount']", "[class*='cost']",
+                "span:contains(₹)", "div:contains(₹)"
+            });
+            
+            if (!name.isEmpty() || !price.isEmpty()) {
+                System.out.println("Product: " + name + ", Price: " + price);
+                count++;
+            }
+        }
+        
+        System.out.println("Total products found with strategy " + strategyNumber + ": " + count);
+    }
+    
+    private static String extractText(Element element, String[] selectors) {
+        for (String selector : selectors) {
+            Elements found = element.select(selector);
+            if (!found.isEmpty()) {
+                String text = found.first().text().trim();
+                if (!text.isEmpty()) {
+                    return text;
+                }
+            }
+        }
+        return "";
+    }
+}

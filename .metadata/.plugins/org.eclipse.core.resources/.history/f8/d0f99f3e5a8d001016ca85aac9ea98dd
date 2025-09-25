@@ -1,0 +1,56 @@
+package crawlerDesign;
+
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.List;
+
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
+public class ExcelExp {
+    
+    public static void exportToExcel(List<ProductData> products) {
+        try {
+            // Create workbook and sheet
+            Workbook workbook = new XSSFWorkbook();
+            Sheet sheet = workbook.createSheet("Products");
+            
+            // Create header row
+            Row headerRow = sheet.createRow(0);
+            headerRow.createCell(0).setCellValue("Category");
+            headerRow.createCell(1).setCellValue("Product Name");
+            headerRow.createCell(2).setCellValue("Price");
+           
+           
+            // Add more columns as per your ProductData fields
+            
+            // Fill data rows
+            int rowNum = 1;
+            for (ProductData product : products) {
+                Row row = sheet.createRow(rowNum++);
+                row.createCell(0).setCellValue(product.getCategory());
+                row.createCell(1).setCellValue(product.getName());
+                row.createCell(2).setCellValue(product.getPriceMRP());
+                
+                // Add more cells as per your ProductData fields
+            }
+            
+            // Auto-size columns
+            for (int i = 0; i < 5; i++) {
+                sheet.autoSizeColumn(i);
+            }
+            
+            // Write to file
+            FileOutputStream fileOut = new FileOutputStream("newproducts.xlsx");
+            workbook.write(fileOut);
+            fileOut.close();
+            workbook.close();
+            
+            System.out.println("Excel file created: newproducts.xlsx");
+            
+        } catch (IOException e) {
+            System.out.println("Exception: " + e.getMessage());
+            
+        }
+    }
+}

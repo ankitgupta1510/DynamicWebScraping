@@ -1,0 +1,87 @@
+package web;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.jsoup.Connection;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
+public class WebScrapper {
+
+	public static void main(String[] args) {
+		String url = "https://www.dmart.in/category/biscuits---cookies-aesc-biscuitsandcookies";
+		int count=0;
+		try {
+			String specificAPI = "https://digital.dmart.in/searchHintDataStoreId-10151";
+	        
+	        Connection.Response response = Jsoup.connect(specificAPI)
+	            .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64)")
+	            .header("Accept", "application/json")
+	            .header("Referer", "https://www.dmart.in/category/biscuits---cookies-aesc-biscuitsandcookies")
+	            .header("X-Requested-With", "XMLHttpRequest")
+	            .ignoreContentType(true)
+	            .method(Connection.Method.GET)
+	            .execute();
+	            
+	        System.out.println("Status Code: " + response.statusCode());
+	        System.out.println("Content-Type: " + response.contentType());
+	        System.out.println("Response Headers: " + response.headers());
+	        
+	        String responseBody = response.body();
+	        System.out.println("\nResponse Body:");
+	        System.out.println(responseBody);
+	        
+			
+			Document doc;
+			doc = Jsoup
+					.connect(url)
+					.userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64)")
+					.get();
+			
+			
+			
+			List<Element>elementList = new ArrayList();
+			
+			
+			Elements allDivs = doc.select("div");
+			System.out.println("Total divs found: " + allDivs.size());
+
+			Elements allElements = doc.select("*");
+			System.out.println("Total elements: " + allElements.size());
+			
+			System.out.println("Page title: " + doc.title());
+	        System.out.println("HTML length: " + doc.html().length());
+	        
+	        
+	        Elements products1 = doc.select(".vertical-card_title__pMGg9");
+           
+            
+            System.out.println("Method 1 found: " + products1.size());
+           
+			
+			elementList.addAll(doc.getElementsByClass
+					("MuiGrid-root MuiGrid-container MuiGrid-spacing-xs-1 mui-style-tuxzvu"));
+			
+//			elementList.addAll(doc.select(".MuiGrid-root.MuiGrid-container"));
+
+			System.out.println((elementList.size()));
+			
+			
+			for(Element product:elementList) {
+	
+				String name = product.select(".vertical-card_title__pMGg9").text(); 
+//			    String price = product.select(".price").text();
+			    System.out.println("Product: " + name + ", Price: " );
+				count++;
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		
+		System.out.println(count);
+	}
+
+}

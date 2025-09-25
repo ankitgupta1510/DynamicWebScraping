@@ -1,0 +1,49 @@
+package web;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
+public class WebScrapper {
+
+	public static void main(String[] args) {
+		String url = "https://www.dmart.in/category/biscuits---cookies-aesc-biscuitsandcookies";
+		int count=0;
+		try {
+			
+			Document doc;
+			doc = Jsoup
+					.connect(url)
+					.userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64)")
+					.get();
+			
+			List<Element>elementList = new ArrayList();
+			
+//			
+//			elementList.addAll(doc.getElementsByClass
+//					("MuiGrid-root MuiGrid-container MuiGrid-spacing-xs-1 mui-style-tuxzvu"));
+//			
+			elementList.addAll(doc.select(".MuiGrid-root.MuiGrid-item"));
+
+			System.out.println((elementList.size()));
+			
+			
+			for(Element product:elementList) {
+	
+				String name = product.select(".vertical-card_title__pMGg9").text(); 
+//			    String price = product.select(".price").text();
+			    System.out.println("Product: " + name + ", Price: " );
+				count++;
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		
+		System.out.println(count);
+	}
+
+}

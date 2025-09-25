@@ -1,0 +1,39 @@
+package web;
+
+import java.io.IOException;
+import org.jsoup.Connection;
+import org.jsoup.Connection.Response;
+import org.jsoup.Jsoup;
+
+public class App {
+    public static void main(String[] args) throws IOException {
+/
+        String url = "https://www.coursera.org/graphql-gateway?opname=Search";
+
+        // Proper JSON payload
+        String queryPayload = "{"
+                + "\"operationName\": \"CareerRoleDataCollectionQuery\","
+                + "\"variables\": {\"limit\": 60, \"pathwayLevel\": \"BEGINNER\"},"
+                + "\"query\": \"query CareerRoleDataCollectionQuery($jobCategory: CareerRole_MerchandisingJobCategory, $pathwayLevel: CareerRole_PathwayLevel, $limit: Int!) { PathwaySkillCareerRoles { queryRolesByPathwayLevelAndCategory(jobCategory: $jobCategory pathwayLevel: $pathwayLevel roleCompletionStatusFilter: PATHWAY_LINKED) { id additionalInput context recommenderConfigurationHash entities(limit: $limit, offset: 0) { elements { ...CareerRoleData __typename } __typename } __typename } __typename } } fragment CareerRoleData on Skill_CareerRole { id name shortDescription domain { id __typename } roleCardImage { url width height __typename } jobPostingData { medianSalary numJobsAvailable currencyCode __typename } merchandisingSkillNames skills { id skillName __typename } slug __typename }\""
+                + "}";
+        
+     // We can use a placeholder like %d for a number
+        String payloadTemplate = "[{\"operationName\":\"Search\",\"variables\":{\"requests\":[{\"entityType\":\"PRODUCTS\",\"limit\":12,\"facets\":[\"cost\",\"topic\",\"skills\",\"productDifficultyLevel\",\"productDuration\",\"productTypeDescription\",\"partners\",\"language\",\"subtitleLanguage\",\"isPartOfCourseraPlus\"],\"sortBy\":\"BEST_MATCH\",\"maxValuesPerFacet\":1000,\"facetFilters\":[],\"cursor\":\"%d\",\"query\":\"\"}, ... rest of the string ...";
+
+        // Then in a loop, you can create the final payload
+        int cursorValue = 2;
+        String finalPayload = String.format(payloadTemplate, cursorValue);
+
+        Response res = Jsoup.connect(url)
+                .ignoreContentType(true)  // Important for JSON
+                .method(Connection.Method.POST)
+                .userAgent("Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:142.0) Gecko/20100101 Firefox/142.0")
+                .header("Accept", "application/json")
+                .header("Content-Type", "application/json")
+                .header("Referer", "https://www.coursera.org/career-academy")
+                .requestBody(queryPayload)  // ✅ JSON body instead of form-data
+                .execute();
+
+        System.out.println(res.body());
+    }
+}

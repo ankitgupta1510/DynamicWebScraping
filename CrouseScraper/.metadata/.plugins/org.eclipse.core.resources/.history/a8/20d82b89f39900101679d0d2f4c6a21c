@@ -1,0 +1,113 @@
+package scrapers;
+
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale.Category;
+import java.util.Map;
+
+import org.jsoup.Connection;
+import org.jsoup.Jsoup;
+import org.jsoup.Connection.Response;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
+import models.BikePolicy;
+import models.TravelPolicy;
+
+public class TravelInsuranceScraper implements InsuranceScraper {
+	
+//	 private final Map<String, String> payloadMap = new LinkedHashMap<>();
+//
+//     public TravelInsuranceScraper() {
+//         payloadMap.put("{\"task\":\"topplans_v2\",\"pagename\":\"THAILAND\",\"planfor\":\"individuals\","
+//           	  + "\"destination\":\"115\",\"currencyID\":\"1\",\"supplierid\":\"0\","
+//           	  + "\"sumInsured\":\"50000\",\"tripDays\":\"180\",\"showperdayprice\":\"1\"}", "Individuals");
+//         payloadMap.put("https://www.policybazaar.com/services/get_health_plan_v2.php?group_id=3", "Family");
+//         payloadMap.put("https://www.policybazaar.com/services/get_health_plan_v2.php?group_id=1", "Senior Citizen");
+//     }
+     
+    public List<TravelPolicy> scrape() {
+        System.out.println("\n--- Starting Travel Insurance Scraping ---");
+        List<TravelPolicy> policies = new ArrayList<>();
+       
+        String travelUrl = "https://www.policybazaar.com/services/get_travel_plan.php";
+       
+        
+        for(int i=0;i<3;i++) {
+        	 String loadVariable="";
+        	 String category="";
+             
+        	if(i==0) {
+        		loadVariable ="individuals";
+        		category = "Individuals";
+        	}else if(i==2) {
+        		loadVariable = "citizens";
+        		category = "Senior Citizens";
+        	}else if(i==3){
+        		loadVariable = "students";
+        		category = "Students";
+        	}
+        	String travelPayload = 
+             	    "{\"task\":\"topplans_v2\",\"pagename\":\"THAILAND\",\"planfor\":\""
+             	    + loadVariable
+             	    + "\","
+             	  + "\"destination\":\"115\",\"currencyID\":\"1\",\"supplierid\":\"0\","
+             	  + "\"sumInsured\":\"50000\",\"tripDays\":\"180\",\"showperdayprice\":\"1\"}";
+        	
+        	System.out.println(travelPayload );
+        	   
+            try {
+                Response response = Jsoup.connect(travelUrl)
+                        .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64)")
+                        .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
+                        .header("Accept-Language", "en-US,en;q=0.5")
+                        .ignoreContentType(true)
+                        .timeout(15000)
+                        .requestBody(travelPayload)
+                        .method(Connection.Method.POST)
+                        .execute();
+                String htmlContent = response.body();
+
+                // Parse HTML
+                Document doc = Jsoup.parse(htmlContent);
+                Elements plans = doc.select(".plan-list"); // Select each insurance plan card
+
+                for (Element plan : plans) {
+                    policies.add(new TravelPolicy(
+                    		category,
+                            plan.select(".name .plan").text(),
+                            plan.select(".plan-name .name").text(),
+                            plan.select(".logo-img img").attr("src"),
+                            plan.select(".pr-amount").text(),
+                            plan.select(".info-part:has(.info-heading:matchesOwn(Personal Accident)) .info-detail").text()
+
+                    ));
+                }
+                System.out.println("Successfully scraped " + policies.size() + " Travel Insurance policies.");
+            } catch (Exception e) {
+                System.err.println("Error scraping Travel Insurance: " + e.getMessage());
+            }
+        	
+        	
+        	
+        }
+        
+        
+        
+     
+        return policies;
+    }
+
+    @Override
+    public String[] getHeaders() {
+        // Updated headers for the Excel file
+        return new String[]{"Category" ,"Plan Name", "Insurer", "Logo URL", "Starting At", "Personal Accident"};
+    }
+
+    @Override
+    public String getSheetName() {
+        return "Travel Insurance";
+    }
+}

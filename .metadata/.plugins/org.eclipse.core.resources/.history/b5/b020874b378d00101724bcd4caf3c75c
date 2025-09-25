@@ -1,0 +1,63 @@
+package crawlerDesign;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.jsoup.Jsoup;
+
+public class CategoriesScraper {
+	public static void main(String[] args) {
+		try {
+			List<String> categoryToken = fetchAllCatToken();
+			
+			  for (String token : categoryToken) {
+	                System.out.println("Starting scrape for category: " + token);
+	                
+	                // category-specific URL
+	                String categoryUrl = "https://digital.dmart.in/api/v3/plp/" + token;
+
+	                // Call scraper for this category
+	                ScrapingLogic scraper = new ScrapingLogic(categoryUrl);
+	                List<ProductData> products = scraper.scrapeAllProducts();
+
+	                System.out.println("Finished " + products.size() + " products from: " + token);
+	                System.out.println("----------------------------");
+
+	                //  Save  products to CSV file 
+	               csvExporter.exportToCsv(products);
+	            }
+			
+			
+		}catch(Exception e) {
+			System.out.println();
+		}
+	}
+	
+	private static List<String> fetchAllCatToken() throws IOException{
+		List<String> seoToken = new ArrayList();
+		
+		String res = Jsoup.connect("https://digital.dmart.in/api/v1/categories/@top?profile=details&storeId=10151")
+				.ignoreContentType(true)
+				.header("Accept", "application/json, text/plain, */*")
+				.userAgent("Mozilla/5.0")
+				.execute()
+				.body();
+		JSONObject jsonobj = new JSONObject(res);
+		JSONArray catArr =jsonobj.getJSONArray("catArray");
+		
+		for(int i=0;i<catArr.length();i++) {
+			JSONObject catObj = catArr.getJSONObject(i);
+			String token = catObj.getString("seoToken");
+			
+			seoToken.add(token);
+		}
+		
+		
+		return seoToken;
+	}
+	
+
+}

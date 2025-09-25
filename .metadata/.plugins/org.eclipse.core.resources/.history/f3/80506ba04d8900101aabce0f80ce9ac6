@@ -1,0 +1,37 @@
+package web;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.JsonNode;
+import java.io.File;
+
+public class Extarctjson {
+    public static void main(String[] args) {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode root = mapper.readTree(new File("data.json"));
+            
+            System.out.println("✅ JSON file successfully loaded!");
+            System.out.println("📄 File size check - Node type: " + root.getNodeType());
+            
+            if (root.isArray()) {
+                System.out.println("🔢 Array hai - Total items: " + root.size());
+                if (root.size() > 0) {
+                    System.out.println("\n📋 First item ke keys:");
+                    root.get(0).fieldNames().forEachRemaining(key -> 
+                        System.out.println("  - " + key)
+                    );
+                }
+            } else if (root.isObject()) {
+                System.out.println("📦 Object hai - Main keys:");
+                root.fieldNames().forEachRemaining(key -> {
+                    JsonNode value = root.get(key);
+                    System.out.println("  - " + key + " (" + value.getNodeType() + ")");
+                });
+            }
+            
+        } catch (Exception e) {
+            System.out.println("❌ Error: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+}

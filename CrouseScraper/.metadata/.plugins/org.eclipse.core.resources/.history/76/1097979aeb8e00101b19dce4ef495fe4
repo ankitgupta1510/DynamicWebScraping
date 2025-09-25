@@ -1,0 +1,9 @@
+package web;
+
+import java.io.IOException;
+
+public class Apptest {
+    public static void main(String[] args) throws IOException {
+        System.out.println("Test Successful!");
+    }
+}

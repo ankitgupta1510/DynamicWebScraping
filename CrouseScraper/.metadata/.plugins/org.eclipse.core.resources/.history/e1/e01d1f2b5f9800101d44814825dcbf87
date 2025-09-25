@@ -1,0 +1,69 @@
+package flow;
+
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+
+public class MainTable {
+
+    public static void main(String[] args) {
+        try {
+            // ✅ PolicyBazaar API endpoint (instead of main page)
+            String apiUrl = "https://www.policybazaar.com/services/get_health_plan_v2.php?group_id=1&qtype=tab&profileType=3&show_plan_count=10";
+
+            // Step 1: Fetch JSON response
+            URL url = new URL(apiUrl);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("User-Agent", "Mozilla/5.0");
+
+            BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+            StringBuilder response = new StringBuilder();
+            String line;
+            while ((line = in.readLine()) != null) {
+                response.append(line);
+            }
+            in.close();
+
+            // Step 2: Parse JSON and extract plan_content (HTML fragment)
+            JSONObject json = new JSONObject(response.toString());
+            String planHtml = json.getString("plan_content");
+
+            // Step 3: Parse that HTML using Jsoup
+            Document doc = Jsoup.parse(planHtml);
+
+            // Step 4: Each plan block
+            Elements plans = doc.select("div"); // broad selection
+
+            for (Element plan : plans) {
+                // Plan Name (first line text usually)
+                String name = plan.select("div.plan-name").text();
+                if (name.isEmpty()) {
+                    // fallback: take direct text if class missing
+                    name = plan.ownText();
+                }
+
+                // Cover Amount
+                String cover = plan.select("div:contains(Cover amount) + div").text();
+
+                // Starting Price
+                String price = plan.select("div:contains(Starting at) + div").text();
+
+                if (!name.isEmpty()) {
+                    System.out.printf("Plan: %s | Cover: %s | Price: %s%n",
+                            name, cover, price);
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}

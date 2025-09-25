@@ -1,0 +1,64 @@
+package web;
+
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.select.Elements;
+
+public class Webscrapper2 {
+    
+    public static void main(String[] args) {
+    	 String apiUrl = "https://digital.dmart.in/api/v1/categories/@top?profile=details&storeId=10151";
+         
+         try {
+             HttpClient client = HttpClient.newHttpClient();
+             
+             HttpRequest request = HttpRequest.newBuilder()
+                     .uri(URI.create(apiUrl))
+                     .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0")
+                     .header("Accept", "application/json")
+                     .header("Referer", "https://www.dmart.in/")
+                     .GET()
+                     .build();
+             
+             HttpResponse<String> response = client.send(request, 
+                 HttpResponse.BodyHandlers.ofString());
+             
+             System.out.println("Status Code: " + response.statusCode());
+             
+             if (response.statusCode() == 200) {
+                 String jsonData = response.body();
+                 System.out.println("API Response:");
+                 System.out.println(jsonData);
+                 
+                 // Basic product extraction (आप अपने JSON structure के अनुसार modify करें)
+                 extractProducts(jsonData);
+             } else {
+                 System.out.println("API call failed with status: " + response.statusCode());
+             }
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+         private static void extractProducts(String jsonData) {
+             // Simple text-based extraction (JSON parsing के बिना)
+             System.out.println("\n=== EXTRACTED PRODUCTS ===");
+             
+             String[] lines = jsonData.split("\\n");
+             
+             for (String line : lines) {
+                 // Look for product names and prices in the JSON
+                 if (line.contains("\"name\"") || line.contains("\"title\"")) {
+                     System.out.println("Product Name: " + line.trim());
+                 }
+                 if (line.contains("\"price\"") || line.contains("\"mrp\"") || line.contains("₹")) {
+                     System.out.println("Price Info: " + line.trim());
+                 }
+             }
+    }
+}

@@ -1,0 +1,220 @@
+package flow;
+
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
+
+public class TestApp {
+
+    public static void main(String[] args) {
+        // Try multiple approaches
+        
+        // Approach 1: PolicyBazaar with better headers
+        tryPolicyBazaarScraping();
+        
+        System.out.println("\n" + "=".repeat(50) + "\n");
+        
+        // Approach 2: Try a simpler insurance website
+        tryAlternativeWebsite();
+        
+        System.out.println("\n" + "=".repeat(50) + "\n");
+        
+        // Approach 3: Try to find API endpoints
+        tryFindingAPIEndpoints();
+    }
+
+    public static void tryPolicyBazaarScraping() {
+        System.out.println("=== APPROACH 1: PolicyBazaar with Enhanced Scraping ===");
+        
+        String url = "https://www.policybazaar.com/health-insurance/health-insurance-india";
+        
+        try {
+            // Create a more realistic browser session
+            Document doc = Jsoup.connect(url)
+                .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+                .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7")
+                .header("Accept-Language", "en-US,en;q=0.9,hi;q=0.8")
+                .header("Accept-Encoding", "gzip, deflate, br")
+                .header("DNT", "1")
+                .header("Connection", "keep-alive")
+                .header("Upgrade-Insecure-Requests", "1")
+                .header("Sec-Fetch-Dest", "document")
+                .header("Sec-Fetch-Mode", "navigate")
+                .header("Sec-Fetch-Site", "none")
+                .header("Sec-Fetch-User", "?1")
+                .header("Cache-Control", "max-age=0")
+                .referrer("https://www.google.com/")
+                .timeout(30000)
+                .followRedirects(true)
+                .ignoreHttpErrors(true)
+                .get();
+
+            System.out.println("✓ Page loaded successfully!");
+            System.out.println("Page title: " + doc.title());
+            System.out.println("Response length: " + doc.html().length() + " characters");
+
+            // Look for any insurance-related content with various approaches
+            searchForInsuranceContent(doc);
+
+        } catch (Exception e) {
+            System.out.println("❌ Error: " + e.getMessage());
+        }
+    }
+
+    public static void tryAlternativeWebsite() {
+        System.out.println("=== APPROACH 2: Alternative Insurance Website ===");
+        
+        // Try a simpler insurance comparison site
+        String[] alternativeUrls = {
+            "https://www.bankbazaar.com/health-insurance.html",
+            "https://www.coverfox.com/health-insurance/",
+            "https://www.acko.com/health-insurance/"
+        };
+        
+        for (String url : alternativeUrls) {
+            try {
+                System.out.println("Trying: " + url);
+                
+                Document doc = Jsoup.connect(url)
+                    .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
+                    .timeout(15000)
+                    .followRedirects(true)
+                    .get();
+                
+                System.out.println("✓ Loaded: " + doc.title());
+                
+                // Look for common insurance elements
+                Elements insuranceElements = doc.select("h1, h2, h3, h4, .product, .plan, .insurance, [class*='insurance'], [class*='plan'], [class*='product']");
+                
+                if (!insuranceElements.isEmpty()) {
+                    System.out.println("Found " + insuranceElements.size() + " potential insurance elements:");
+                    for (int i = 0; i < Math.min(5, insuranceElements.size()); i++) {
+                        Element element = insuranceElements.get(i);
+                        String text = element.text().trim();
+                        if (text.length() > 0 && text.length() < 200) {
+                            System.out.println("  • " + text);
+                        }
+                    }
+                }
+                
+                System.out.println("---");
+                
+            } catch (Exception e) {
+                System.out.println("❌ Failed: " + url + " - " + e.getMessage());
+            }
+        }
+    }
+
+    public static void tryFindingAPIEndpoints() {
+        System.out.println("=== APPROACH 3: Looking for API Endpoints ===");
+        
+        // Many insurance sites load data via AJAX/API calls
+        // Let's try to find common API patterns
+        
+        String baseUrl = "https://www.policybazaar.com";
+        String[] possibleApiEndpoints = {
+            "/api/health-insurance/plans",
+            "/api/v1/health/plans",
+            "/health-insurance/api/plans",
+            "/api/insurance/health",
+            "/ajax/health-insurance",
+            "/api/products/health"
+        };
+        
+        for (String endpoint : possibleApiEndpoints) {
+            String fullUrl = baseUrl + endpoint;
+            try {
+                System.out.println("Testing API endpoint: " + fullUrl);
+                
+                Document response = Jsoup.connect(fullUrl)
+                    .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
+                    .header("Accept", "application/json, text/plain, */*")
+                    .header("X-Requested-With", "XMLHttpRequest")
+                    .ignoreContentType(true)
+                    .timeout(10000)
+                    .get();
+                
+                String responseText = response.text();
+                if (responseText.length() > 10 && !responseText.contains("404") && !responseText.contains("Not Found")) {
+                    System.out.println("✓ Potential API found! Response length: " + responseText.length());
+                    System.out.println("Sample response: " + responseText.substring(0, Math.min(200, responseText.length())));
+                } else {
+                    System.out.println("❌ No data");
+                }
+                
+            } catch (Exception e) {
+                System.out.println("❌ Failed: " + e.getMessage());
+            }
+        }
+    }
+
+    public static void searchForInsuranceContent(Document doc) {
+        System.out.println("\n--- Searching for Insurance Content ---");
+        
+        // Try multiple CSS selector strategies
+        Map<String, String> selectors = new HashMap<>();
+        selectors.put("Card Content", "div.card-content, .card-content, [class*='card-content'], [class*='card']");
+        selectors.put("Plan Names", "div.plan-name, .plan-name, [class*='plan-name'], [class*='plan']");
+        selectors.put("Insurance Names", "[class*='insurance'], [class*='company'], [class*='provider']");
+        selectors.put("Product Cards", "[class*='product'], [class*='item'], [class*='tile']");
+        selectors.put("List Items", "li, ul li, ol li");
+        selectors.put("Headers", "h1, h2, h3, h4, h5, h6");
+        
+        boolean foundAnyContent = false;
+        
+        for (Map.Entry<String, String> entry : selectors.entrySet()) {
+            String selectorName = entry.getKey();
+            String selector = entry.getValue();
+            
+            try {
+                Elements elements = doc.select(selector);
+                if (!elements.isEmpty()) {
+                    System.out.println("✓ " + selectorName + " (" + elements.size() + " found):");
+                    foundAnyContent = true;
+                    
+                    for (int i = 0; i < Math.min(3, elements.size()); i++) {
+                        Element element = elements.get(i);
+                        String text = element.text().trim();
+                        if (text.length() > 0 && text.length() < 150) {
+                            System.out.println("  • " + text);
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                // Ignore selector errors
+            }
+        }
+        
+        if (!foundAnyContent) {
+            System.out.println("❌ No structured content found. Checking for any text content...");
+            
+            // Look for any meaningful text content
+            Elements allElements = doc.select("div, span, p, td, th");
+            System.out.println("Total elements found: " + allElements.size());
+            
+            // Sample some text content
+            int textFound = 0;
+            for (Element element : allElements) {
+                String text = element.ownText().trim();
+                if (text.length() > 20 && text.length() < 100 && !text.toLowerCase().contains("javascript") && !text.toLowerCase().contains("error")) {
+                    System.out.println("  Sample text: " + text);
+                    textFound++;
+                    if (textFound >= 5) break;
+                }
+            }
+            
+            if (textFound == 0) {
+                System.out.println("❌ This suggests the content is loaded dynamically via JavaScript");
+                System.out.println("📝 Page source sample (first 500 chars):");
+                String html = doc.html();
+                System.out.println(html.substring(0, Math.min(500, html.length())));
+            }
+        }
+    }
+}

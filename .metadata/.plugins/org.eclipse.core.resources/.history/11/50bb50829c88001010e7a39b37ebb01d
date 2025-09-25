@@ -1,0 +1,54 @@
+package web;
+
+import org.jsoup.Connection;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+
+public class Webscrapper2 {
+	
+	    public static void main(String[] args) {
+	        // Test multiple endpoints
+	        String[] testURLs = {
+	            "https://digital.dmart.in/searchHintDataStoreId-10151",
+	            "https://digital.dmart.in/offerDataV2StoreId-10151",
+	            "https://digital.dmart.in/productDataStoreId-10151"
+	        };
+	        
+	        for (String url : testURLs) {
+	            testAPI(url);
+	        }
+	    }
+	    
+	    public static void testAPI(String apiUrl) {
+	        try {
+	            System.out.println("\n" + "=".repeat(50));
+	            System.out.println("Testing: " + apiUrl);
+	            
+	            Connection.Response response = Jsoup.connect(apiUrl)
+	                .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64)")
+	                .header("Accept", "application/json")
+	                .header("Referer", "https://www.dmart.in/")
+	                .ignoreContentType(true)
+	                .timeout(10000)
+	                .execute();
+	                
+	            if (response.statusCode() == 200) {
+	                String body = response.body();
+	                System.out.println("✓ SUCCESS! Status: " + response.statusCode());
+	                System.out.println("Content Length: " + body.length());
+	                System.out.println("First 300 chars:");
+	                System.out.println(body.substring(0, Math.min(300, body.length())));
+	                
+	                if (body.contains("biscuit") || body.contains("product")) {
+	                    System.out.println("*** CONTAINS PRODUCT DATA! ***");
+	                }
+	            } else {
+	                System.out.println("✗ Failed. Status: " + response.statusCode());
+	            }
+	            
+	        } catch (Exception e) {
+	            System.out.println("✗ Error: " + e.getMessage());
+	        }
+	    }
+	
+}

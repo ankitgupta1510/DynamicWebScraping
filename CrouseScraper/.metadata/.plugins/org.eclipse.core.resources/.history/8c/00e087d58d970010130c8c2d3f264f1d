@@ -1,0 +1,118 @@
+package flow;
+
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
+public class TestApp {
+
+    public static void main(String[] args) {
+        
+        // Simple working example
+        String url = "https://www.acko.com/health-insurance/";
+        
+        try {
+            System.out.println("Connecting to: " + url);
+            
+            Document doc = Jsoup.connect(url)
+                .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
+                .timeout(10000)
+                .get();
+            
+            System.out.println("✅ Connected! Page: " + doc.title());
+            
+            // Super simple selectors
+            System.out.println("\n=== All Headers ===");
+            Elements headers = doc.select("h1, h2, h3");
+            for (Element h : headers) {
+                String text = h.text().trim();
+                if (text.length() > 5 && text.length() < 100) {
+                    System.out.println("• " + text);
+                }
+            }
+            
+            System.out.println("\n=== All Links ===");
+            Elements links = doc.select("a");
+            for (int i = 0; i < Math.min(10, links.size()); i++) {
+                String text = links.get(i).text().trim();
+                if (text.length() > 5 && text.length() < 80) {
+                    System.out.println("• " + text);
+                }
+            }
+            
+            System.out.println("\n=== All Divs with Text ===");
+            Elements divs = doc.select("div");
+            int count = 0;
+            for (Element div : divs) {
+                String text = div.ownText().trim(); // Only direct text, not children
+                if (text.length() > 10 && text.length() < 100 && count < 15) {
+                    System.out.println("• " + text);
+                    count++;
+                }
+            }
+            
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+        }
+        
+        System.out.println("\n" + "=".repeat(50));
+        
+        // Your original site with basic approach
+        tryOriginalSite();
+    }
+    
+    public static void tryOriginalSite() {
+        String url = "https://www.policybazaar.com/health-insurance/health-insurance-india";
+        
+        try {
+            System.out.println("Trying original site...");
+            
+            Document doc = Jsoup.connect(url)
+                .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
+                .timeout(15000)
+                .get();
+            
+            System.out.println("✅ Page loaded!");
+            
+            // Just get ANY content first
+            System.out.println("\n=== Page Headers ===");
+            Elements allHeaders = doc.select("h1, h2, h3, h4, h5, h6");
+            for (Element header : allHeaders) {
+                String text = header.text().trim();
+                if (text.length() > 0) {
+                    System.out.println("• " + text);
+                }
+            }
+            
+            // Then try your selector
+            Elements cardInfo = doc.select("div.card-content");
+            System.out.println("\nYour selector 'div.card-content' found: " + cardInfo.size() + " elements");
+            
+            if (cardInfo.size() == 0) {
+                // Try variations
+                String[] variations = {"div.card-content", ".card-content", "div[class*=card-content]", "div[class*=card]"};
+                
+                for (String selector : variations) {
+                    Elements elements = doc.select(selector);
+                    System.out.println("Selector '" + selector + "' found: " + elements.size() + " elements");
+                }
+                
+                // Show available div classes
+                System.out.println("\nAvailable div classes (first 10):");
+                Elements divsWithClasses = doc.select("div[class]");
+                for (int i = 0; i < Math.min(10, divsWithClasses.size()); i++) {
+                    System.out.println("• " + divsWithClasses.get(i).className());
+                }
+            } else {
+                for (Element info : cardInfo) {
+                    String name = info.select("div.plan-name").text();
+                    System.out.println("Insurance company: " + name);
+                }
+            }
+            
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+        }
+    }
+}

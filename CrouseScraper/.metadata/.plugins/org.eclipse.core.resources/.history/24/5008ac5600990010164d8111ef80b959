@@ -1,0 +1,182 @@
+package flow;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.jsoup.Connection;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
+public class MainTable {
+
+    // Yeh ek nested class hai configuration store karne ke liye.
+    // Isse hum scraper ko batate hain ki KYA aur KAHAN se scrape karna hai.
+    static class ScraperConfig {
+        private String url;
+        private String itemContainerSelector; // Har item ko select karne wala CSS selector
+        private Map<String, String> dataPoints; // Data ka naam aur uska CSS selector
+
+        public ScraperConfig(String url, String itemContainerSelector) {
+            this.url = url;
+            this.itemContainerSelector = itemContainerSelector;
+            this.dataPoints = new HashMap<>();
+        }
+
+        public void addDataPoint(String name, String selector) {
+            this.dataPoints.put(name, selector);
+        }
+
+        public String getUrl() {
+            return url;
+        }
+
+        public String getItemContainerSelector() {
+            return itemContainerSelector;
+        }
+
+        public Map<String, String> getDataPoints() {
+            return dataPoints;
+        }
+    }
+
+    /**
+     * Yeh main scraping logic wala function hai (HTML scraping ke liye).
+     * @param config ScraperConfig object jismein saari details hain.
+     * @return Scrape kiya hua data JSON format mein as a String.
+     */
+    public String scrape(ScraperConfig config) {
+        JSONArray resultsArray = new JSONArray();
+
+        try {
+            // 1. Website se connect karke HTML document fetch karna
+            System.out.println("Connecting to " + config.getUrl() + "...");
+            // Timeout add karna zaroori hai complex websites ke liye
+            Document doc = Jsoup.connect(config.getUrl()).userAgent("Mozilla/5.0").timeout(10000).get();
+            System.out.println("Connection successful!");
+
+            // 2. Saare items (jaise products, articles) ko select karna
+            Elements items = doc.select(config.getItemContainerSelector());
+            System.out.println("Found " + items.size() + " items to scrape.");
+            
+            if (items.isEmpty()) {
+                System.out.println("Warning: No items found with the selector '" + config.getItemContainerSelector() + "'. The content might be loaded by JavaScript.");
+            }
+
+            // 3. Har item par loop karke data extract karna
+            for (Element item : items) {
+                JSONObject itemJson = new JSONObject();
+
+                // Har data point ke liye (jo config mein define kiya hai)
+                for (Map.Entry<String, String> entry : config.getDataPoints().entrySet()) {
+                    String dataName = entry.getKey();
+                    String selector = entry.getValue();
+                    
+                    Element dataElement = item.selectFirst(selector);
+                    String extractedText = (dataElement != null) ? dataElement.text() : "Not Found";
+                    
+                    if (selector.contains("[") && selector.contains("]")) {
+                         String attribute = selector.substring(selector.indexOf("[") + 1, selector.indexOf("]"));
+                         if (dataElement != null) {
+                            extractedText = dataElement.attr(attribute);
+                         }
+                    }
+
+                    itemJson.put(dataName, extractedText);
+                }
+                resultsArray.put(itemJson);
+            }
+
+        } catch (IOException e) {
+            System.err.println("Scraping failed for URL: " + config.getUrl());
+            e.printStackTrace();
+            return new JSONObject().put("error", "Could not fetch the page. Check URL and connection.").toString();
+        }
+
+        return resultsArray.toString(4);
+    }
+
+    /**
+     * Yeh naya function hai jo seedhe PolicyBazaar API se JSON data fetch karega.
+     * @param apiUrl API ka URL jahan se data fetch karna hai.
+     * @return API se mila hua data JSON format mein as a String.
+     */
+    public String scrapePolicyBazaarApi(String apiUrl) {
+        try {
+            System.out.println("Connecting to API: " + apiUrl);
+            // API se raw JSON fetch karna
+            String rawJson = Jsoup.connect(apiUrl)
+                    .ignoreContentType(true)
+                    .userAgent("Mozilla/5.0")
+                    .timeout(15000)
+                    .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
+                    .header("Accept-Language", "en-US,en;q=0.5")
+                    .execute()
+                    .body();
+
+            System.out.println("API Connection successful! Parsing JSON...");
+            
+            // Raw string ko JSON Object mein convert karna
+            JSONObject apiResponse = new JSONObject(rawJson);
+            
+            // API response ke andar se 'plans' array nikalna
+            JSONArray plans = apiResponse.getJSONArray("plans");
+            
+            JSONArray finalResult = new JSONArray();
+
+            // Har plan ko loop karke zaroori data extract karna
+            for (int i = 0; i < plans.length(); i++) {
+                JSONObject plan = plans.getJSONObject(i);
+                
+                JSONObject extractedData = new JSONObject();
+                extractedData.put("Insurance Plan Name", plan.optString("plan_name", "N/A"));
+                extractedData.put("Premium", "₹" + plan.optString("monthly_premium", "N/A"));
+                extractedData.put("Insurer Name", plan.optString("insurer_name", "N/A"));
+                
+                finalResult.put(extractedData);
+            }
+
+            return finalResult.toString(4);
+
+        } catch (Exception e) {
+            System.err.println("API Scraping failed for URL: " + apiUrl);
+            e.printStackTrace();
+            return new JSONObject().put("error", "Could not fetch or parse API response.").toString();
+        }
+    }
+
+
+    public static void main(String[] args) {
+        MainTable scraper = new MainTable();
+
+        // --- EXAMPLE 1 & 2: Static HTML websites ko scrape karna ---
+        // (Yeh pehle jaisa hi hai)
+        ScraperConfig bookScraperConfig = new ScraperConfig("http://books.toscrape.com/", "article.product_pod");
+        bookScraperConfig.addDataPoint("Book Title", "h3 > a[title]");
+        bookScraperConfig.addDataPoint("Price", "p.price_color");
+        System.out.println("--- Starting Scraper for Books.toscrape.com ---");
+        System.out.println(scraper.scrape(bookScraperConfig));
+        System.out.println("--------------------\n");
+        
+        ScraperConfig quoteScraperConfig = new ScraperConfig("http://quotes.toscrape.com/", "div.quote");
+        quoteScraperConfig.addDataPoint("Quote", "span.text");
+        quoteScraperConfig.addDataPoint("Author", "small.author");
+        System.out.println("--- Starting Scraper for Quotes.toscrape.com ---");
+        System.out.println(scraper.scrape(quoteScraperConfig));
+        System.out.println("--------------------\n");
+
+        // --- EXAMPLE 3: Policybazaar ko API se scrape karna (RELIABLE METHOD) ---
+        String apiUrl = "https://www.policybazaar.com/services/get_health_plan_v2.php?group_id=1&qtype=tab&profileType=3&show_plan_count=5";
+        
+        System.out.println("--- Starting API Scraper for Policybazaar.com ---");
+        String scrapedPolicies = scraper.scrapePolicyBazaarApi(apiUrl);
+        System.out.println("\n--- SCRAPED POLICIES (FROM API) ---");
+        System.out.println(scrapedPolicies);
+        System.out.println("--------------------");
+    }
+}
+

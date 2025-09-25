@@ -1,0 +1,66 @@
+package scrapers;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.jsoup.Connection;
+import org.jsoup.Jsoup;
+import org.jsoup.Connection.Response;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
+import models.BikePolicy;
+import models.TravelPolicy;
+
+public class TravelInsuranceScraper implements InsuranceScraper {
+
+    public List<TravelPolicy> scrape() {
+        System.out.println("\n--- Starting Travel Insurance Scraping ---");
+        List<TravelPolicy> policies = new ArrayList<>();
+        String bikeUrl = "https://www.policybazaar.com/services/gettwservices.php";
+        String bikePayload = "{\"task\":\"newtopplansfullwidth\"}";
+
+        try {
+            Response response = Jsoup.connect(bikeUrl)
+                    .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64)")
+                    .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
+                    .header("Accept-Language", "en-US,en;q=0.5")
+                    .ignoreContentType(true)
+                    .timeout(15000)
+                    .requestBody(bikePayload)
+                    .method(Connection.Method.POST)
+                    .execute();
+            String htmlContent = response.body();
+
+            // Parse HTML
+            Document doc = Jsoup.parse(htmlContent);
+            Elements plans = doc.select(".plan-card"); // Select each insurance plan card
+
+            for (Element plan : plans) {
+                policies.add(new TravelPolicy(
+                        plan.select(".plan-name").text(),
+                        plan.select(".plan .name").text(),
+                        plan.select(".logo-img img").attr("src"),
+                        plan.select(".pr-amount").text(),
+                        plan.select(".feature-item:contains(Personal Accident) .feature-value").text()
+                ));
+            }
+            System.out.println("Successfully scraped " + policies.size() + " Travel Insurance policies.");
+        } catch (Exception e) {
+            System.err.println("Error scraping Travel Insurance: " + e.getMessage());
+        }
+        return policies;
+    }
+
+    @Override
+    public String[] getHeaders() {
+        // Updated headers for the Excel file
+        return new String[]{"Plan Name", "Insurer", "Logo URL", "Starting At", "Personal Accident"};
+    }
+
+    @Override
+    public String getSheetName() {
+        return "Travel Insurance";
+    }
+}

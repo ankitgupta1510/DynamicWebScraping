@@ -1,0 +1,57 @@
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.support.ui.WebDriverWait;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import java.time.Duration;
+import java.util.List;
+
+public class PolicybazaarScraper {
+
+    public static void main(String[] args) {
+        // Set the path to your ChromeDriver executable
+        // System.setProperty("webdriver.chrome.driver", "/path/to/your/chromedriver");
+
+        WebDriver driver = new ChromeDriver();
+        String url = "https://www.policybazaar.com/health-insurance/health-insurance-india/";
+
+        try {
+            driver.get(url);
+
+            // Wait for the plan cards to be visible on the page (up to 30 seconds)
+            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(30));
+            wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("div.list-card")));
+
+            // 1. Select the main container block for EACH college
+            List<WebElement> insuranceCards = driver.findElements(By.cssSelector("div.list-card"));
+
+            System.out.println("Found " + insuranceCards.size() + " insurance plans:\n");
+
+            // 2. Loop through each card
+            for (WebElement card : insuranceCards) {
+                // 3. From within each card, find the specific details
+                
+                // Corrected selector for the plan name (class is "plan_name")
+                String planName = card.findElement(By.cssSelector("div.plan_name")).getText();
+                
+                // Selector for the premium price
+                String premium = card.findElement(By.cssSelector("div.starting_at")).getText();
+                
+                // Selector for cashless hospitals
+                String hospitals = card.findElement(By.cssSelector("div.cashless_hospitals")).getText();
+
+                System.out.println("Plan Name: " + planName);
+                System.out.println("Premium: " + premium);
+                System.out.println("Hospitals: " + hospitals);
+                System.out.println("--------------------");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            // Close the browser window
+            driver.quit();
+        }
+    }
+}

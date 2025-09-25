@@ -1,0 +1,41 @@
+package CollegeScraper;
+
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+import java.io.IOException;
+
+public class basic {
+    public static void main(String[] args) throws IOException {
+        String url = "https://bschool.careers360.com/colleges/ranking";
+
+        Document doc = Jsoup.connect(url)
+                .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36")
+                .get();
+
+        // 1. Select the main container block for EACH college
+        Elements collegeBlocks = doc.select(".facet-tuple-main-container");
+
+        System.out.println("Found " + collegeBlocks.size() + " colleges:\n");
+
+        // 2. Loop through each college's main block
+        for (Element block : collegeBlocks) {
+            
+            // 3. Find the name and fees INSIDE that specific block
+            String collegeName = block.select("h3 > a.title").text();
+            
+            // Use .selectFirst() for safety in case a fee is missing
+            Element feeElement = block.selectFirst("li.college-fees-text");
+            
+            String fees = "N/A"; // Set a default value
+            if (feeElement != null) {
+                fees = feeElement.text();
+            }
+
+            System.out.println("College: " + collegeName);
+            System.out.println("Fees: " + fees);
+            System.out.println("--------------------");
+        }
+    }
+}

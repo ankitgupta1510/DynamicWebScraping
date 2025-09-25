@@ -1,0 +1,82 @@
+package flow;
+
+import org.jsoup.Connection;
+import org.jsoup.Jsoup;
+import org.jsoup.Connection.Response;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
+
+
+public class MainTestCheck {
+	
+	public static void main(String [] args) {
+		
+//		String url = "https://www.policybazaar.com/services/getcarservices.php";
+		String bikeUrl = "https://www.policybazaar.com/services/gettwservices.php";
+//		String payload = "[{\"task\":\"topplans\",\"ismobile\":false,\"topPlanNew\":1,\"comprehensive\":1,\"plantypeid\":1}]";
+//		String payload = "[{\"task\":\"topplans\",\"ismobile\":false,\"topPlanNew\":1,\"comprehensive\":1,\"plantypeid\":1}]";
+//		String payload = "[{"
+//		        + "\"task\":\"topplans\","
+//		        + "\"ismobile\":false,"
+//		        + "\"topPlanNew\":1,"
+//		        + "\"comprehensive\":1,"
+//		        + "\"plantypeid\":1"
+//		        + "}]";
+		
+		String bikePayload = "{\"task\":\"newtopplansfullwidth\"}";
+
+		
+		try {
+			
+			Response response = Jsoup.connect(bikeUrl)
+                    .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64)")
+                    .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
+	                .header("Accept-Language", "en-US,en;q=0.5")
+                    .ignoreContentType(true)  
+                    .timeout(15000)
+                    .requestBody(bikePayload)
+                    .method(Connection.Method.POST)
+                    .execute();
+     	   String htmlContent = response.body();
+//     	  System.out.println(htmlContent);
+     	   Document doc = Jsoup.parse(htmlContent);
+//     	   System.out.println(doc);
+     	   
+     	   Elements plans = doc.select(".plan-card");
+     	  System.out.println(plans);
+     	   
+//     	   for (Element plan : plans) {
+//               // Extract plan type
+//               String planType = plan.select(".planType .headingV3").text();
+//               
+//               // Extract plan name from data-label attribute
+//               String planName = plan.select(".top-plan-widget").attr("data-label");
+//               if (planName.isEmpty()) {
+//                   planName = "Insurance Plan";
+//               }
+//               
+//               // Extract premium (clean the text)
+//               String premium = plan.select(".primaryBtnV2").text();
+//               premium = premium.replaceAll("₹", "").replaceAll("[^0-9,]", "").trim();
+//               
+//               // Extract logo URL
+//               String logoUrl = plan.select(".logo img").attr("src");
+//               if (!logoUrl.isEmpty() && !logoUrl.startsWith("http")) {
+//                   logoUrl = "https://static.pbcdn.in" + logoUrl;
+//               }
+//               
+//               
+//           }
+          
+     	   
+							
+			
+		}catch(Exception e) {
+			e.getMessage();
+		}
+
+	}
+
+}

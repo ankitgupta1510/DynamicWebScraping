@@ -1,0 +1,109 @@
+package flow;
+
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
+public class TestApp {
+
+    public static void main(String[] args) {
+
+        String url = "https://www.policybazaar.com/health-insurance/health-insurance-india";
+        try {
+            Document doc = Jsoup.connect(url)
+                .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+                .timeout(15000)
+                .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8")
+                .header("Accept-Language", "en-US,en;q=0.5")
+                .get();
+
+            System.out.println("Page Title: " + doc.title());
+            System.out.println("="+ 50);
+
+            // Screenshot se dekh kar ye selectors use karo:
+            
+            // Method 1: Main plan container
+            Elements planCards = doc.select("div.planBoxing");
+            System.out.println("Plans found with 'div.planBoxing': " + planCards.size());
+            
+            if (planCards.isEmpty()) {
+                // Method 2: Alternative selector
+                planCards = doc.select("div[class*='planBox']");
+                System.out.println("Plans found with 'div[class*='planBox']': " + planCards.size());
+            }
+            
+            if (planCards.isEmpty()) {
+                // Method 3: Content wrapper approach
+                planCards = doc.select("div.contentWrapper div[class*='plan']");
+                System.out.println("Plans found with content wrapper: " + planCards.size());
+            }
+            
+            // Extract plan information
+            for (int i = 0; i < planCards.size(); i++) {
+                Element plan = planCards.get(i);
+                
+                // Try to get plan name/company name
+                String planName = "";
+                
+                // Multiple ways to get plan name
+                Elements nameElements = plan.select("h3, .plan-name, [class*='name'], strong");
+                if (!nameElements.isEmpty()) {
+                    planName = nameElements.first().text();
+                }
+                
+                // Get cover amount
+                String coverAmount = "";
+                Elements coverElements = plan.select("[class*='cover'], [class*='amount']");
+                for (Element cover : coverElements) {
+                    String text = cover.text();
+                    if (text.contains("₹") || text.contains("Lakh")) {
+                        coverAmount = text;
+                        break;
+                    }
+                }
+                
+                // Get premium amount
+                String premium = "";
+                Elements premiumElements = plan.select("[class*='premium'], [class*='month']");
+                for (Element prem : premiumElements) {
+                    String text = prem.text();
+                    if (text.contains("₹") && text.contains("month")) {
+                        premium = text;
+                        break;
+                    }
+                }
+                
+                // Print extracted information
+                if (!planName.isEmpty() || !coverAmount.isEmpty() || !premium.isEmpty()) {
+                    System.out.println("\n--- Plan " + (i + 1) + " ---");
+                    System.out.println("Plan Name: " + (planName.isEmpty() ? "Not found" : planName));
+                    System.out.println("Cover Amount: " + (coverAmount.isEmpty() ? "Not found" : coverAmount));
+                    System.out.println("Premium: " + (premium.isEmpty() ? "Not found" : premium));
+                    System.out.println("Full text: " + plan.text().substring(0, Math.min(100, plan.text().length())) + "...");
+                }
+            }
+            
+            // If still no data, try generic text extraction
+            if (planCards.isEmpty()) {
+                System.out.println("\nNo specific plan cards found. Trying generic approach...");
+                
+                // Look for text containing insurance keywords
+                Elements textElements = doc.select("*:contains(ActiVOne), *:contains(Smart), *:contains(Lakh), *:contains(month)");
+                System.out.println("Elements with insurance keywords: " + textElements.size());
+                
+                for (int i = 0; i < Math.min(5, textElements.size()); i++) {
+                    Element el = textElements.get(i);
+                    String text = el.text();
+                    if (text.length() > 10 && text.length() < 200) {
+                        System.out.println((i + 1) + ". " + text);
+                    }
+                }
+            }
+
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+}

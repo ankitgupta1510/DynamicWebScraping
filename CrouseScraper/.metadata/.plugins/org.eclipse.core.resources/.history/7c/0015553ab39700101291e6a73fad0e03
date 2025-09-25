@@ -1,0 +1,40 @@
+package flow;
+
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+import java.io.IOException;
+
+public class TestApp {
+
+    public static void main(String[] args) throws IOException {
+        
+        // 1. API URL jahan se data aa raha hai
+//        String apiUrl = "https://health.policybazaar.com/insurer-list/v2?product_id=2";
+        String apiUrl = "https://www.policybazaar.com/health-insurance/health-insurance-india/";
+
+        // 2. Jsoup se connect karke data (HTML) lo
+        Document doc = Jsoup.connect(apiUrl)
+                .ignoreContentType(true) // Yeh zaroori hai
+                .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+                .timeout(15000)  // 15 second timeout
+                .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8")
+                .header("Accept-Language", "en-US,en;q=0.5")
+                .get();
+
+        // 3. Sabhi plan ke main container ('div.list-card') ko select karo
+        Elements insuranceCards = doc.select("block_content_wrapper");
+
+        System.out.println("Found " + insuranceCards.size() + " plans:\n");
+
+        // 4. Har card se details nikal kar print karo
+        for (Element card : insuranceCards) {
+            String planName = card.select("div.plan_name").text();
+            String premium = card.select("div.starting_at").text();
+            String hospitals = card.select("div.cashless_hospitals").text();
+
+            System.out.println("Plan: " + planName + " | Premium: " + premium + " | " + hospitals);
+        }
+    }
+}

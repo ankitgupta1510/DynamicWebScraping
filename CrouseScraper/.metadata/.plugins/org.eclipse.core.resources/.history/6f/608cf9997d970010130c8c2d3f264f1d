@@ -1,0 +1,39 @@
+package flow;
+
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
+public class MainApp {
+	
+	public static void main(String[]args) {
+		
+		String url = "http://www.policybazaar.com/health-insurance/health-insurance-india";
+		try {
+			Document doc = Jsoup.connect(url)
+					.userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36")
+//					.timeout(10000)
+					.get();
+//			System.out.println(doc.html());
+
+			Elements cardInfo = doc.select("div.card");
+			for(Element info:cardInfo) {
+				String name = info.select("div.card-content").text();
+				System.out.println(name);
+				
+			}
+			System.out.println(cardInfo);	
+		}
+		catch(Exception e) {
+			System.out.println(e.getMessage());	
+
+			
+		}
+		
+	
+
+	
+
+}
+}

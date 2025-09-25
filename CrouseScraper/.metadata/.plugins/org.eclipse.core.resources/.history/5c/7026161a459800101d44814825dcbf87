@@ -1,0 +1,80 @@
+package flow;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
+public class MainTable {
+    public static void main(String[] args) {
+        String url = "https://www.policybazaar.com/health-insurance/health-insurance-india";
+        try {
+            Document doc = Jsoup.connect(url)
+                .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
+                .timeout(15000)
+                .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
+                .header("Accept-Language", "en-US,en;q=0.5")
+                .get();
+
+            // Extract ALL table rows including hidden ones
+            Elements allTableRows = doc.select("div.allinsurer table tbody tr");
+            
+            System.out.println("Total insurance plans found (including hidden): " + allTableRows.size());
+            
+            // Also try to find any hidden rows with specific CSS classes
+            Elements hiddenRows = doc.select("tr[style*='display:none'], tr.hidden, tr.hide");
+            System.out.println("Specifically hidden rows: " + hiddenRows.size());
+            
+            int planCount = 0;
+            
+            for (Element row : allTableRows) {
+                Elements cells = row.select("td");
+                
+                if (cells.size() >= 3) {
+                    // Extract plan details
+                    Element planCell = cells.get(0);
+                    String planName = planCell.select("a").text();
+                    if (planName.isEmpty()) {
+                        planName = planCell.text();
+                    }
+                    
+                    String sumInsured = cells.get(1).text();
+                    String entryAge = cells.get(2).text();
+                    
+                    // Skip header row
+                    if (!planName.contains("Name of Health Insurance Plan") && !planName.isEmpty()) {
+                        planCount++;
+                        System.out.println("\n=== Plan " + planCount + " ===");
+                        System.out.println("Plan Name: " + planName);
+                        System.out.println("Sum Insured: " + sumInsured);
+                        System.out.println("Entry Age: " + entryAge);
+                        
+                        // Check if this row has any hidden attributes
+                        String style = row.attr("style");
+                        String cssClass = row.attr("class");
+                        if (!style.isEmpty() || !cssClass.isEmpty()) {
+                            System.out.println("CSS Info: style='" + style + "' class='" + cssClass + "'");
+                        }
+                    }
+                }
+            }
+            
+            // Also check the entire HTML content for any other table structures
+            Elements allTables = doc.select("table");
+            System.out.println("\nTotal tables found: " + allTables.size());
+            
+            // Look for any script tags that might contain JSON data
+            Elements scripts = doc.select("script");
+            for (Element script : scripts) {
+                String scriptContent = script.html();
+                if (scriptContent.contains("insurance") || scriptContent.contains("plans")) {
+                    System.out.println("\nFound relevant script content (first 200 chars):");
+                    System.out.println(scriptContent.substring(0, Math.min(200, scriptContent.length())) + "...");
+                }
+            }
+            
+        } catch(Exception e) {
+            System.out.println("Error: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+}

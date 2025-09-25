@@ -1,0 +1,7 @@
+package flow;
+
+public class DataPointsToScrape {
+	private String anme;
+	
+
+}

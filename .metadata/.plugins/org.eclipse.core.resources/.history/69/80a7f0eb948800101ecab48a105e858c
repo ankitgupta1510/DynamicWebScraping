@@ -1,0 +1,53 @@
+package web;
+
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+
+public class Webscrapper2 {
+	public static void main(String[] args) {
+		 
+		    try {
+		        // Based on your network tab, try these patterns:
+		        String[] possibleAPIs = {
+		            "https://digital.dmart.in/searchHintDataStoreId-10151",
+		            "https://digital.dmart.in/offerDataV2StoreId-10151", 
+		            "https://digital.dmart.in/productDataStoreId-10151"
+		        };
+		        
+		        for (String apiUrl : possibleAPIs) {
+		            System.out.println("\n=== TRYING API: " + apiUrl + " ===");
+		            
+		            try {
+		                // Important: Use ignoreContentType for JSON responses
+		                Document response = Jsoup.connect(apiUrl)
+		                    .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64)")
+		                    .header("Accept", "application/json, text/plain, */*")
+		                    .header("Referer", "https://www.dmart.in/")
+		                    .header("Accept-Language", "en-US,en;q=0.9")
+		                    .timeout(15000)
+		                    .ignoreContentType(true)  // Very important for JSON
+		                    .get();
+		                    
+		                String jsonData = response.body().text();
+		                System.out.println("Response length: " + jsonData.length());
+		                System.out.println("First 500 chars:");
+		                System.out.println(jsonData.substring(0, Math.min(500, jsonData.length())));
+		                
+		                if (jsonData.contains("product") || jsonData.contains("biscuit")) {
+		                    System.out.println("*** PRODUCT DATA FOUND! ***");
+		                }
+		                
+		            } catch (Exception e) {
+		                System.out.println("Failed: " + e.getMessage());
+		            }
+		        }
+		        
+		    } catch (Exception e) {
+		        e.printStackTrace();
+		    }
+		
+		
+		
+	}
+
+}

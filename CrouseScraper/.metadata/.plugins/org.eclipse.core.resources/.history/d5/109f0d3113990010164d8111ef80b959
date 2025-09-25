@@ -1,0 +1,73 @@
+import org.jsoup.Connection;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+import org.json.JSONObject;
+import org.json.JSONArray;
+
+public class MainApp {
+    public static void main(String[] args) {
+        String url = "https://www.policybazaar.com/services/gettermservices.php";
+        String payload = "{\"task\":\"topplanswithfeatureandfilter\",\"isfilter\":1,"
+                + "\"pagename\":\"Buy Best Term Insurance Plan <sup>~</sup>\","
+                + "\"isnri\":false}";
+
+        try {
+            // POST request
+            Connection.Response response = Jsoup.connect(url)
+                    .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64)")
+                    .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
+	                .header("Accept-Language", "en-US,en;q=0.5")
+                    .ignoreContentType(true)
+                    .timeout(15000)
+                    .requestBody(payload)
+                    .method(Connection.Method.POST)
+                    .execute();
+
+            String jsonStr = response.body();
+            System.out.println("RAW RESPONSE:\n" + jsonStr.substring(0, 200)); // debug
+
+            // ✅ Detect if Object or Array
+            if (jsonStr.trim().startsWith("{")) {
+                JSONObject root = new JSONObject(jsonStr);
+                String htmlContent = root.getString("content"); // yaha se HTML milega
+                parsePlans(htmlContent);
+            } else if (jsonStr.trim().startsWith("[")) {
+                JSONArray root = new JSONArray(jsonStr);
+                for (int i = 0; i < root.length(); i++) {
+                    JSONObject obj = root.getJSONObject(i);
+                    if (obj.has("content")) {
+                        parsePlans(obj.getString("content"));
+                    }
+                }
+            } else {
+                System.out.println("Response JSON nahi hai, maybe HTML mila hai.");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void parsePlans(String htmlContent) {
+        Document doc = Jsoup.parse(htmlContent);
+        Elements plans = doc.select("div.top-plan-card");
+
+        int count = 1;
+        for (Element plan : plans) {
+            String name = plan.select(".plan-name").text();
+            String lifeCover = plan.select(".life-cover p:nth-of-type(2)").text();
+            String maxLimit = plan.select(".life-cover p:nth-of-type(3)").text();
+            String claim = plan.select(".claim-settlement:contains(Claim Settled) p:nth-of-type(2)").text();
+            String premium = plan.select(".claim-settlement:contains(Premium Starting) p:nth-of-type(2)").text();
+
+            System.out.println("--------------------------------------------------");
+            System.out.println(count++ + ". " + name);
+            System.out.println("   Life Cover: " + lifeCover);
+            System.out.println("   " + maxLimit);
+            System.out.println("   Claim Settled: " + claim);
+            System.out.println("   Premium Starting: " + premium);
+        }
+    }
+}

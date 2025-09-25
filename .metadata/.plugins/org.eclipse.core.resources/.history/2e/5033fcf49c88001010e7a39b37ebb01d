@@ -1,0 +1,30 @@
+package web;
+
+import org.jsoup.Connection;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+
+public class Webscrapper2 {
+	
+	    public static void main(String[] args) {
+	        // Test multiple endpoints
+	    	String exactURL = "https://digital.dmart.in/api/v3/espots/conf/searchHintData?storeId=10151";
+	        try {
+	            Connection.Response response = Jsoup.connect(exactURL)
+	                .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64)")
+	                .header("Accept", "application/json, text/plain, */*")
+	                .header("Referer", "https://www.dmart.in/category/biscuits---cookies-aesc-biscuitsandcookies")
+	                .ignoreContentType(true)
+	                .timeout(15000)
+	                .execute();
+	                
+	            System.out.println("Status: " + response.statusCode());
+	            System.out.println("Response: " + response.body());
+	            
+	            
+	        } catch (Exception e) {
+	            System.out.println("✗ Error: " + e.getMessage());
+	        }
+	    }
+	
+}

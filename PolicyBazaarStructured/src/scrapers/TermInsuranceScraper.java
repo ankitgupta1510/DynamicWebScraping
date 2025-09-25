@@ -1,0 +1,67 @@
+package scrapers;
+
+
+
+import models.Policy;
+import models.TermPolicy;
+import org.jsoup.Connection;
+import org.jsoup.Connection.Response;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+import java.util.ArrayList;
+import java.util.List;
+
+public class TermInsuranceScraper implements InsuranceScraper {
+
+    @Override
+    public List<TermPolicy> scrape() {
+        System.out.println("\n--- Starting Term Insurance Scraping ---");
+        List<TermPolicy> policies = new ArrayList<>();
+        String url = "https://www.policybazaar.com/services/gettermservices.php";
+        String payload = "{\"task\":\"topplanswithfeatureandfilter\",\"isfilter\":1,\"pagename\":\"Buy Best Term Insurance Plan <sup>~</sup>\",\"isnri\":false}";
+
+        try {
+        	   Response response = Jsoup.connect(url)
+                       .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64)")
+                       .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
+   	                .header("Accept-Language", "en-US,en;q=0.5")
+                       .ignoreContentType(true)  
+                       .timeout(15000)
+                       .requestBody(payload)
+                       .method(Connection.Method.POST)
+                       .execute();
+        	   String htmlContent = response.body();
+
+               // Parse HTML
+               Document doc = Jsoup.parse(htmlContent);
+               Elements plans = doc.select("div.top-plan-card");
+
+            for (Element plan : plans) {
+                policies.add(new TermPolicy(
+                        plan.select(".plan-name").text(),
+                        plan.select(".life-cover p:nth-of-type(2)").text(),
+                        plan.select(".life-cover p:nth-of-type(3)").text(),
+                        plan.select(".claim-settlement:contains(Claim Settled) p:nth-of-type(2)").text(),
+                        plan.select(".claim-settlement:contains(Premium Starting) p:nth-of-type(2)").text(),
+                        plan.select(".logo-block.card-top-block img").attr("src")
+                ));
+            }
+             System.out.println("Successfully scraped " + policies.size() + " Term Insurance policies.");
+        } catch (Exception e) {
+            System.err.println("Error scraping Term Insurance: " + e.getMessage());
+        }
+        return policies;
+    }
+
+    @Override
+    public String[] getHeaders() {
+        return new String[]{"Plan Name", "Life Cover", "Cover Upto", "Claim Settled", "Monthly Premium", "Logo URL"};
+    }
+
+    @Override
+    public String getSheetName() {
+        return "Term Insurance";
+    }
+}

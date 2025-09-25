@@ -1,0 +1,99 @@
+package web;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
+public class WebScrapper {
+
+	public static void main(String[] args) {
+		String url = "https://www.dmart.in/category/biscuits---cookies-aesc-biscuitsandcookies";
+		int count=0;
+		try {
+			
+			Document doc;
+			doc = Jsoup
+					.connect(url)
+					.userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64)")
+					.get();
+			
+			// Add these lines after getting document
+			System.out.println("\n=== HTML STRUCTURE DEBUG ===");
+
+			// Print first 1000 characters to see what's actually there
+			String htmlContent = doc.html();
+			System.out.println("First 1000 characters of HTML:");
+			System.out.println(htmlContent.substring(0, Math.min(1000, htmlContent.length())));
+
+			// Check for JavaScript indicators
+			if (htmlContent.contains("script")) {
+			    System.out.println("\n✓ JavaScript found in page");
+			}
+			if (htmlContent.contains("React") || htmlContent.contains("react")) {
+			    System.out.println("✓ React framework detected");
+			}
+			if (htmlContent.contains("angular") || htmlContent.contains("Angular")) {
+			    System.out.println("✓ Angular framework detected");
+			}
+
+			// Look for common dynamic loading indicators
+			Elements scripts = doc.select("script");
+			System.out.println("Total script tags: " + scripts.size());
+
+			// Check for loading placeholders or empty containers
+			Elements containers = doc.select("div[class*='container'], div[class*='grid'], div[class*='product']");
+			System.out.println("Potential product containers: " + containers.size());
+
+			for (Element container : containers) {
+			    System.out.println("Container class: " + container.attr("class"));
+			    System.out.println("Container content length: " + container.text().length());
+			}
+			
+			List<Element>elementList = new ArrayList();
+			
+			
+			Elements allDivs = doc.select("div");
+			System.out.println("Total divs found: " + allDivs.size());
+
+			Elements allElements = doc.select("*");
+			System.out.println("Total elements: " + allElements.size());
+			
+			System.out.println("Page title: " + doc.title());
+	        System.out.println("HTML length: " + doc.html().length());
+	        
+	        
+	        Elements products1 = doc.select(".vertical-card_title__pMGg9");
+            Elements products2 = doc.select("div[class*='vertical-card']");
+            Elements products3 = doc.select("*[class*='product']");
+            
+            System.out.println("Method 1 found: " + products1.size());
+            System.out.println("Method 2 found: " + products2.size());
+            System.out.println("Method 3 found: " + products3.size());
+			
+			elementList.addAll(doc.getElementsByClass
+					("MuiGrid-root MuiGrid-container MuiGrid-spacing-xs-1 mui-style-tuxzvu"));
+			
+//			elementList.addAll(doc.select(".MuiGrid-root.MuiGrid-container"));
+
+			System.out.println((elementList.size()));
+			
+			
+			for(Element product:elementList) {
+	
+				String name = product.select(".vertical-card_title__pMGg9").text(); 
+//			    String price = product.select(".price").text();
+			    System.out.println("Product: " + name + ", Price: " );
+				count++;
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		
+		System.out.println(count);
+	}
+
+}

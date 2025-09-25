@@ -1,0 +1,28 @@
+package flow;
+
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+
+public class GrowwApp {
+	public static void main(String[] args) {
+		String url = "https://groww.in/mutual-funds/filter?q=&fundSize=&pageNo=0&sortBy=3";
+		
+		try {
+		 String doc = Jsoup.connect(url)
+	                .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
+	                
+	                .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
+	                .header("Accept-Language", "en-US,en;q=0.5")
+	                .execute().body();
+		 
+		 
+		 System.out.println(doc);
+		 
+		}
+		catch(Exception e) {
+			System.out.println(e.getMessage());
+		}
+		
+	}
+
+}

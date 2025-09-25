@@ -1,0 +1,45 @@
+package web;
+
+import org.jsoup.Connection;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+
+public class Webscrapper2 {
+	public static void main(String[] args) {
+		 
+		    try {
+		    	 String url = "https://digital.dmart.in/offerDataV2StoreId-10151"; // Example
+		         
+		         Document response = Jsoup.connect(url)
+		             .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
+		             .header("Accept", "application/json, text/javascript, */*; q=0.01")
+		             .header("Accept-Language", "en-US,en;q=0.9,hi;q=0.8")
+		             .header("Accept-Encoding", "gzip, deflate, br")
+		             .header("Connection", "keep-alive")
+		             .header("Referer", "https://www.dmart.in/category/biscuits---cookies-aesc-biscuitsandcookies")
+		             .header("Sec-Fetch-Dest", "empty")
+		             .header("Sec-Fetch-Mode", "cors")
+		             .header("Sec-Fetch-Site", "same-site")
+		             .ignoreContentType(true)
+		             .timeout(10000)
+		             .get();
+		             
+		         String jsonResponse = response.body().text();
+		         System.out.println("JSON Response:");
+		         System.out.println(jsonResponse);
+		         
+		         // Try to extract product info
+		         if (jsonResponse.contains("biscuit") || jsonResponse.contains("product")) {
+		             System.out.println("ok");
+		         }
+		           
+		        
+		    } catch (Exception e) {
+		        e.printStackTrace();
+		    }
+		
+		
+		
+	}
+
+}

@@ -1,0 +1,74 @@
+package web;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.JsonNode;
+import java.io.File;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.JsonNode;
+import java.io.File;
+
+public class Extarctjson {
+    public static void main(String[] args) {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode root = mapper.readTree(new File("data.json"));
+            
+            System.out.println("🔍 Searching for Biscuits & Cookies...\n");
+            
+            // catArray mein search karo
+            JsonNode catArray = root.get("catArray");
+            
+            for (int i = 0; i < catArray.size(); i++) {
+                JsonNode category = catArray.get(i);
+                String categoryName = category.get("name").asText().toLowerCase();
+                
+                // Biscuits ya cookies related categories dhundo
+                if (categoryName.contains("biscuit") || 
+                    categoryName.contains("cookie") || 
+                    categoryName.contains("snack") ||
+                    categoryName.contains("bakery")) {
+                    
+                    System.out.println("🍪 Found Category: " + category.get("name").asText());
+                    System.out.println("   SEO Token: " + category.get("seoToken").asText());
+                    System.out.println("   Unique ID: " + category.get("uniqueId").asText());
+                    
+                    // Sub categories bhi check karo
+                    if (category.has("subCatArray")) {
+                        JsonNode subCats = category.get("subCatArray");
+                        System.out.println("   Sub Categories: " + subCats.size());
+                        
+                        // Sub categories explore karo
+                        for (int j = 0; j < subCats.size(); j++) {
+                            JsonNode subCat = subCats.get(j);
+                            if (subCat.isObject() && subCat.has("name")) {
+                                System.out.println("     - " + subCat.get("name").asText());
+                            }
+                        }
+                    }
+                    System.out.println();
+                }
+            }
+            
+            // Marketing data mein bhi check karo
+            System.out.println("🎯 Checking Marketing Data:");
+            JsonNode marketingData = root.get("MarketingSpotData");
+            
+            for (int i = 0; i < marketingData.size(); i++) {
+                JsonNode spot = marketingData.get(i);
+                String categoryName = spot.get("categoryName").asText().toLowerCase();
+                
+                if (categoryName.contains("biscuit") || 
+                    categoryName.contains("cookie") || 
+                    categoryName.contains("snack")) {
+                    
+                    System.out.println("🍪 Marketing Spot: " + spot.get("categoryName").asText());
+                    System.out.println("   Category ID: " + spot.get("categoryId").asText());
+                    System.out.println();
+                }
+            }
+            
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+        }
+    }
+}

@@ -1,0 +1,160 @@
+package web;
+
+import java.io.FileWriter;
+import java.io.IOException;
+import org.jsoup.Connection;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
+public class Webscrapper2 {
+    
+    public static void main(String[] args) {
+        String url = "https://www.dmart.in/category/biscuits---cookies-aesc-biscuitsandcookies";
+        
+        try {
+            // Enhanced connection WITHOUT restricted headers
+            Connection.Response response = Jsoup.connect(url)
+                    .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+                    .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8")
+                    .header("Accept-Language", "en-US,en;q=0.5")
+                    .header("Accept-Encoding", "gzip, deflate")
+                    .header("Upgrade-Insecure-Requests", "1")
+                    // REMOVED: .header("Connection", "keep-alive") - This is restricted!
+                    .followRedirects(true)
+                    .timeout(15000)
+                    .execute();
+            
+            System.out.println("Response Code: " + response.statusCode());
+            System.out.println("Final URL: " + response.url());
+            
+            Document doc = response.parse();
+            System.out.println("Page title: " + doc.title());
+            System.out.println("HTML length: " + doc.html().length());
+            
+            // Save HTML to file for inspection
+            saveHTMLToFile(doc.html(), "dmart_page.html");
+            
+            // Debug page structure
+            debugPageStructure(doc);
+            
+            // Try comprehensive selector strategies
+            tryAllSelectors(doc);
+            
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    private static void saveHTMLToFile(String html, String filename) {
+        try (FileWriter writer = new FileWriter(filename)) {
+            writer.write(html);
+            System.out.println("HTML saved to " + filename + " for inspection");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    private static void debugPageStructure(Document doc) {
+        System.out.println("\n=== PAGE STRUCTURE DEBUG ===");
+        
+        // Look for common e-commerce patterns
+        Elements cards = doc.select("div[class*='card'], div[class*='product'], div[class*='item']");
+        System.out.println("Cards/Products/Items found: " + cards.size());
+        
+        // Check for data attributes
+        Elements dataElements = doc.select("[data-*]");
+        System.out.println("Elements with data attributes: " + dataElements.size());
+        
+        // Look for React/Vue components
+        Elements reactElements = doc.select("[class*='react'], [class*='vue'], [id*='app'], [id*='root']");
+        System.out.println("Framework elements found: " + reactElements.size());
+        
+        // Print sample class names
+        Elements allDivs = doc.select("div[class]");
+        System.out.println("\n=== SAMPLE CLASS NAMES (first 10) ===");
+        for (int i = 0; i < Math.min(10, allDivs.size()); i++) {
+            String className = allDivs.get(i).attr("class");
+            if (!className.isEmpty() && className.length() < 100) {
+                System.out.println("Class: " + className);
+            }
+        }
+        
+        // Look for script tags with JSON data
+        Elements scripts = doc.select("script");
+        System.out.println("\nScript tags found: " + scripts.size());
+        for (Element script : scripts) {
+            String scriptContent = script.html();
+            if (scriptContent.contains("product") && scriptContent.contains("{") && scriptContent.length() > 100) {
+                System.out.println("Found script with potential product data (length: " + scriptContent.length() + ")");
+                break;
+            }
+        }
+    }
+    
+    private static void tryAllSelectors(Document doc) {
+        System.out.println("\n=== TRYING COMPREHENSIVE SELECTORS ===");
+        
+        String[] selectors = {
+            // Generic product selectors
+            "div[class*='product']",
+            "div[class*='item']", 
+            "div[class*='card']",
+            "article",
+            
+            // Price-based selectors
+            "*:contains(₹)",
+            "span:contains(₹)",
+            "div:contains(₹)",
+            
+            // List item selectors
+            "li[class*='product']",
+            "li[class*='item']",
+            
+            // Grid selectors
+            "div[class*='grid'] > div",
+            "div[class*='container'] > div",
+            
+            // React/Dynamic content
+            "[data-testid*='product']",
+            "[data-product-id]",
+            "[data-sku]",
+            
+            // Image-based detection
+            "img[alt*='biscuit']",
+            "img[alt*='cookie']",
+            "img[src*='product']"
+        };
+        
+        for (String selector : selectors) {
+            Elements elements = doc.select(selector);
+            System.out.println("Selector '" + selector + "' found: " + elements.size() + " elements");
+            
+            if (elements.size() > 0 && elements.size() < 50) {
+                analyzeElements(elements, selector);
+            }
+        }
+    }
+    
+    private static void analyzeElements(Elements elements, String selector) {
+        System.out.println("\n--- Analyzing elements from: " + selector + " ---");
+        
+        for (int i = 0; i < Math.min(3, elements.size()); i++) {
+            Element element = elements.get(i);
+            System.out.println("\nElement " + (i+1) + ":");
+            String text = element.text();
+            if (text.length() > 0) {
+                System.out.println("Text (first 150 chars): " + 
+                    text.substring(0, Math.min(150, text.length())));
+            }
+            System.out.println("Class: " + element.attr("class"));
+            
+            // Try to find price patterns
+            if (text.contains("₹") || text.matches(".*\\d+.*")) {
+                System.out.println("*** POTENTIAL PRODUCT ELEMENT FOUND! ***");
+                System.out.println("Full text: " + text);
+            }
+        }
+    }
+}

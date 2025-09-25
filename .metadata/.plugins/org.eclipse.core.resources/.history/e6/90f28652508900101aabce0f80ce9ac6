@@ -1,0 +1,29 @@
+package web;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.JsonNode;
+import java.io.File;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.JsonNode;
+import java.io.File;
+
+public class Extarctjson {
+    public static void main(String[] args) {
+        try {
+        	 ObjectMapper mapper = new ObjectMapper();
+             JsonNode root = mapper.readTree(new File("data.json"));
+             
+             JsonNode catArray = root.get("catArray");
+             
+             // Sirf category names print karo
+             for (int i = 0; i < catArray.size(); i++) {
+                 String name = catArray.get(i).get("name").asText();
+                 System.out.println((i+1) + ". " + name);
+             }
+           
+            
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+        }
+    }
+}

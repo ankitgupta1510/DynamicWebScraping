@@ -1,0 +1,7 @@
+package flow;
+
+public class HealthPolicy {
+	private String anme;
+	
+
+}

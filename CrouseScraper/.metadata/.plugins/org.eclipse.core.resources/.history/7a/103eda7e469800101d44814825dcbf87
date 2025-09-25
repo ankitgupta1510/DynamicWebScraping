@@ -1,0 +1,209 @@
+package flow;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+import java.util.ArrayList;
+import java.util.List;
+
+public class TestApp {
+    
+    static class DetailedInsurancePlan {
+        String planName;
+        String coverAmount;
+        String startingPrice;
+        String tabCategory; // Individual, Family, Senior Citizen
+        String features;
+        String cashlessHospitals;
+        
+        DetailedInsurancePlan(String name, String cover, String price, String category) {
+            this.planName = name;
+            this.coverAmount = cover;
+            this.startingPrice = price;
+            this.tabCategory = category;
+        }
+        
+        @Override
+        public String toString() {
+            return String.format("Plan: %s | Cover: %s | Price: %s | Category: %s", 
+                               planName, coverAmount, startingPrice, tabCategory);
+        }
+    }
+    
+    public static void main(String[] args) {
+        String url = "https://www.policybazaar.com/health-insurance/health-insurance-india";
+        List<DetailedInsurancePlan> detailedPlans = new ArrayList<>();
+        
+        try {
+            Document doc = Jsoup.connect(url)
+                .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
+                .timeout(15000)
+                .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
+                .header("Accept-Language", "en-US,en;q=0.5")
+                .get();
+
+            System.out.println("=== EXTRACTING DETAILED CARD PLANS ===\n");
+            
+            // Extract from Individual tab
+            extractFromTab(doc, "Individual", detailedPlans);
+            
+            // Extract from Family tab  
+            extractFromTab(doc, "Family", detailedPlans);
+            
+            // Extract from Senior Citizen tab
+            extractFromTab(doc, "Senior_Citizen", detailedPlans);
+            
+            // Print all extracted plans
+            System.out.println("\n=== DETAILED PLANS SUMMARY ===");
+            System.out.println("Total Detailed Plans Found: " + detailedPlans.size());
+            
+            for (DetailedInsurancePlan plan : detailedPlans) {
+                System.out.println(plan);
+                if (!plan.features.isEmpty()) {
+                    System.out.println("  Features: " + plan.features);
+                }
+                if (!plan.cashlessHospitals.isEmpty()) {
+                    System.out.println("  Cashless Hospitals: " + plan.cashlessHospitals);
+                }
+                System.out.println("---");
+            }
+            
+        } catch(Exception e) {
+            System.out.println("Error: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    
+    private static void extractFromTab(Document doc, String tabName, List<DetailedInsurancePlan> plans) {
+        // Target the specific tab section
+        Elements tabSection = doc.select("#" + tabName + " .card-content, " +
+                                       "section[id='" + tabName + "'] .card-content, " +
+                                       ".tab-panel-" + tabName.toLowerCase() + " .card-content");
+        
+        System.out.println("=== " + tabName.toUpperCase() + " TAB ===");
+        System.out.println("Cards found in " + tabName + " tab: " + tabSection.size());
+        
+        for (Element card : tabSection) {
+            try {
+                // Extract plan name
+                String planName = extractPlanName(card);
+                
+                // Extract cover amount
+                String coverAmount = extractCoverAmount(card);
+                
+                // Extract starting price
+                String startingPrice = extractStartingPrice(card);
+                
+                // Extract features
+                String features = extractFeatures(card);
+                
+                // Extract cashless hospitals info
+                String cashlessHospitals = extractCashlessHospitals(card);
+                
+                if (!planName.isEmpty() || !coverAmount.isEmpty()) {
+                    DetailedInsurancePlan plan = new DetailedInsurancePlan(planName, coverAmount, startingPrice, tabName);
+                    plan.features = features;
+                    plan.cashlessHospitals = cashlessHospitals;
+                    plans.add(plan);
+                    
+                    System.out.println("Found Plan: " + planName);
+                    System.out.println("  Cover: " + coverAmount);
+                    System.out.println("  Starting Price: " + startingPrice);
+                    System.out.println("  Category: " + tabName);
+                }
+                
+            } catch (Exception e) {
+                System.out.println("Error processing card in " + tabName + ": " + e.getMessage());
+            }
+        }
+        System.out.println();
+    }
+    
+    private static String extractPlanName(Element card) {
+        // Based on your HTML: div class="plan-name"
+        Elements planNameElements = card.select(".plan-name, .title16");
+        if (!planNameElements.isEmpty()) {
+            return planNameElements.first().text().trim();
+        }
+        
+        // Fallback: look for text that looks like a plan name
+        Elements titleElements = card.select("h3, h4, .title, [class*='name']");
+        for (Element title : titleElements) {
+            String text = title.text().trim();
+            if (text.length() > 5 && text.length() < 100) {
+                return text;
+            }
+        }
+        
+        return "";
+    }
+    
+    private static String extractCoverAmount(Element card) {
+        // Based on your HTML: div class="cover-price" -> div class="value"
+        Elements coverPriceSection = card.select(".cover-price .value");
+        if (!coverPriceSection.isEmpty()) {
+            return coverPriceSection.first().text().trim();
+        }
+        
+        // Alternative: look for label-value pairs with "Cover amount"
+        Elements labelValues = card.select(".label-value");
+        for (Element lv : labelValues) {
+            Elements labels = lv.select(".label");
+            Elements values = lv.select(".value");
+            
+            if (!labels.isEmpty() && !values.isEmpty()) {
+                String label = labels.first().text().toLowerCase();
+                if (label.contains("cover") || label.contains("amount")) {
+                    return values.first().text().trim();
+                }
+            }
+        }
+        
+        return "";
+    }
+    
+    private static String extractStartingPrice(Element card) {
+        // Look for price information in label-value pairs
+        Elements labelValues = card.select(".label-value");
+        for (Element lv : labelValues) {
+            Elements labels = lv.select(".label");
+            Elements values = lv.select(".value");
+            
+            if (!labels.isEmpty() && !values.isEmpty()) {
+                String label = labels.first().text().toLowerCase();
+                if (label.contains("starting") || label.contains("premium") || label.contains("price")) {
+                    return values.first().text().trim();
+                }
+            }
+        }
+        
+        return "";
+    }
+    
+    private static String extractFeatures(Element card) {
+        // Extract features from topPlanFeatures section
+        Elements featureElements = card.select(".topPlanFeatures, .planFeatures, .features");
+        if (!featureElements.isEmpty()) {
+            return featureElements.first().text().trim();
+        }
+        
+        return "";
+    }
+    
+    private static String extractCashlessHospitals(Element card) {
+        // Look for cashless hospitals information
+        String cardText = card.text().toLowerCase();
+        if (cardText.contains("cashless")) {
+            // Try to extract the number
+            String[] words = cardText.split("\\s+");
+            for (int i = 0; i < words.length - 1; i++) {
+                if (words[i+1].equals("cashless") || words[i+1].contains("hospital")) {
+                    if (words[i].matches("\\d+")) {
+                        return words[i] + " cashless hospitals";
+                    }
+                }
+            }
+        }
+        return "";
+    }
+}

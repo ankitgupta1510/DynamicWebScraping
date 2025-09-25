@@ -1,0 +1,108 @@
+package flow;
+
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
+public class TestApp {
+
+    public static void main(String[] args) {
+        
+        String url = "https://www.policybazaar.com/health-insurance/health-insurance-india";
+        
+        try {
+            System.out.println("🔗 Connecting to: " + url);
+            
+            Document doc = Jsoup.connect(url)
+                .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+                .timeout(20000) // 20 second timeout
+                .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8")
+                .header("Accept-Language", "en-US,en;q=0.5")
+                .followRedirects(true)
+                .get();
+
+            System.out.println("✅ Connection successful!");
+            System.out.println("📄 Page title: " + doc.title());
+            System.out.println("📏 Page length: " + doc.html().length() + " characters");
+            
+            // आपका original selector
+            Elements cardInfo = doc.select("div.card-content");
+            System.out.println("🎯 Elements found with 'div.card-content': " + cardInfo.size());
+            
+            if (cardInfo.size() == 0) {
+                System.out.println("❌ No elements found with your selector!");
+                System.out.println("🔍 Let's debug what's actually on the page...\n");
+                
+                // Alternative selectors to try
+                String[] alternativeSelectors = {
+                    ".card-content",
+                    "div[class*='card-content']", 
+                    "div[class*='card']",
+                    ".card",
+                    "div.plan-name",
+                    ".plan-name",
+                    "div[class*='plan']",
+                    "div[class*='insurance']",
+                    "div[class*='product']"
+                };
+                
+                System.out.println("🧪 Testing alternative selectors:");
+                for (String selector : alternativeSelectors) {
+                    Elements elements = doc.select(selector);
+                    System.out.println("  " + selector + " → " + elements.size() + " elements");
+                    
+                    if (elements.size() > 0 && elements.size() < 50) {
+                        // Show first few results
+                        for (int i = 0; i < Math.min(3, elements.size()); i++) {
+                            String text = elements.get(i).text().trim();
+                            if (text.length() > 0 && text.length() < 100) {
+                                System.out.println("    Sample " + (i+1) + ": " + text);
+                            }
+                        }
+                    }
+                }
+                
+                System.out.println("\n🔍 Looking for ANY div with class attribute:");
+                Elements allDivsWithClass = doc.select("div[class]");
+                System.out.println("Total divs with classes: " + allDivsWithClass.size());
+                
+                // Show some class names
+                System.out.println("\n📋 Sample class names found:");
+                for (int i = 0; i < Math.min(20, allDivsWithClass.size()); i++) {
+                    String className = allDivsWithClass.get(i).className();
+                    if (!className.isEmpty()) {
+                        System.out.println("  • " + className);
+                    }
+                }
+                
+                // Check if page content suggests JavaScript loading
+                String pageSource = doc.html().toLowerCase();
+                if (pageSource.contains("loading") || pageSource.contains("please wait") || 
+                    pageSource.contains("javascript") || pageSource.length() < 5000) {
+                    System.out.println("\n⚠️  WARNING: Page might be loading content via JavaScript!");
+                    System.out.println("   This means JSoup won't see the dynamic content.");
+                }
+                
+            } else {
+                // Original code path
+                System.out.println("✅ Found elements! Processing...");
+                for (Element info : cardInfo) {
+                    String name = info.select("div.plan-name").text();
+                    if (!name.isEmpty()) {
+                        System.out.println("Insurance company: " + name);
+                    } else {
+                        System.out.println("No plan name found in this element");
+                        System.out.println("Element text: " + info.text());
+                    }
+                }
+            }
+            
+        } catch (Exception e) {
+            System.out.println("❌ Error occurred:");
+            System.out.println("   Message: " + e.getMessage());
+            System.out.println("   Type: " + e.getClass().getSimpleName());
+            e.printStackTrace();
+        }
+    }
+}

@@ -1,0 +1,45 @@
+package flow;
+
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+import java.io.IOException;
+
+public class TestApp {
+    public static void main(String[] args) throws IOException  {
+        String url = "https://www.policybazaar.com/health-insurance/health-insurance-india/";
+
+        // NOTE: This will likely return 0 results because the content is loaded by JavaScript.
+        // This code is for demonstrating the correct selectors if the page were static.
+        
+        Document doc = Jsoup.connect(url)
+        		.userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+                .timeout(15000)  // 15 second timeout
+                .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8")
+                .header("Accept-Language", "en-US,en;q=0.5")
+                .get();
+
+        // 1. **Correct Main Container**: Select the block for EACH insurance plan.
+        Elements insuranceCards = doc.select("div.list-card");
+
+        System.out.println("Found " + insuranceCards.size() + " insurance plans:\n");
+
+        // 2. Loop through each plan's container
+        for (Element card : insuranceCards) {
+            
+            // 3. Now, find the name and other details INSIDE that specific card.
+            
+            // **Corrected Name Selector**: The class uses an underscore, not a hyphen.
+            String planName = card.select("div.plan_name").text();
+            
+            String premium = card.select("div.starting_at").text();
+            String hospitals = card.select("div.cashless_hospitals").text();
+
+            System.out.println("Plan Name: " + planName);
+            System.out.println("Premium: " + premium);
+            System.out.println("Hospitals: " + hospitals);
+            System.out.println("--------------------");
+        }
+    }
+}

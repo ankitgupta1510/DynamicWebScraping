@@ -1,0 +1,138 @@
+package flow;
+
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
+public class TestApp {
+    
+    public static void main(String[] args) {
+        
+        // पहले simple website try करते हैं जो definitely काम करेगी
+        scrapeBankBazaar();
+        
+        System.out.println("\n" + "=".repeat(60) + "\n");
+        
+        // फिर PolicyBazaar try करते हैं improved approach से
+        scrapePolicyBazaarImproved();
+    }
+    
+    public static void scrapeBankBazaar() {
+        System.out.println("🔍 Scraping BankBazaar for Health Insurance...");
+        
+        try {
+            String url = "https://www.bankbazaar.com/health-insurance.html";
+            
+            Document doc = Jsoup.connect(url)
+                .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+                .header("Accept-Language", "en-US,en;q=0.9")
+                .timeout(15000)
+                .get();
+            
+            System.out.println("✅ Successfully loaded: " + doc.title());
+            
+            // Different selectors to try
+            String[] selectors = {
+                "h2, h3, h4",  // Headers
+                ".product-name, .plan-name",  // Product names
+                "[class*='product'], [class*='plan'], [class*='card']",  // Product cards
+                "a[href*='health']"  // Health insurance links
+            };
+            
+            for (String selector : selectors) {
+                Elements elements = doc.select(selector);
+                if (!elements.isEmpty()) {
+                    System.out.println("\n📋 Found with selector '" + selector + "' (" + elements.size() + " items):");
+                    
+                    for (int i = 0; i < Math.min(8, elements.size()); i++) {
+                        Element element = elements.get(i);
+                        String text = element.text().trim();
+                        
+                        if (text.length() > 5 && text.length() < 100) {
+                            System.out.println("  " + (i+1) + ". " + text);
+                        }
+                    }
+                }
+            }
+            
+        } catch (Exception e) {
+            System.out.println("❌ Error: " + e.getMessage());
+        }
+    }
+    
+    public static void scrapePolicyBazaarImproved() {
+        System.out.println("🔍 Scraping PolicyBazaar (Improved Approach)...");
+        
+        try {
+            String url = "https://www.policybazaar.com/health-insurance/";
+            
+            // Sleep to act more human-like
+            Thread.sleep(2000);
+            
+            Document doc = Jsoup.connect(url)
+                .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+                .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8")
+                .header("Accept-Language", "en-US,en;q=0.9,hi;q=0.8")
+                .header("Cache-Control", "no-cache")
+                .header("Pragma", "no-cache")
+                .referrer("https://www.google.com/search?q=health+insurance")
+                .timeout(25000)
+                .followRedirects(true)
+                .get();
+            
+            System.out.println("✅ Page loaded: " + doc.title());
+            
+            // Debug: देखते हैं कि page में क्या content है
+            System.out.println("🔍 Debugging page content...");
+            
+            // Look for common insurance-related text
+            String pageText = doc.text().toLowerCase();
+            if (pageText.contains("health insurance") || pageText.contains("medical insurance")) {
+                System.out.println("✅ Health insurance content detected!");
+            } else {
+                System.out.println("⚠️  No obvious insurance content found");
+            }
+            
+            // Try to find any structured content
+            Elements allDivs = doc.select("div");
+            System.out.println("📊 Total div elements: " + allDivs.size());
+            
+            // Look for divs with meaningful class names
+            Elements meaningfulDivs = doc.select("div[class*='plan'], div[class*='card'], div[class*='product'], div[class*='insurance'], div[class*='company']");
+            System.out.println("🎯 Relevant divs found: " + meaningfulDivs.size());
+            
+            if (meaningfulDivs.size() > 0) {
+                System.out.println("\n📋 Content from relevant divs:");
+                for (int i = 0; i < Math.min(5, meaningfulDivs.size()); i++) {
+                    Element div = meaningfulDivs.get(i);
+                    String className = div.className();
+                    String text = div.text().trim();
+                    
+                    if (text.length() > 10 && text.length() < 200) {
+                        System.out.println("  Class: " + className);
+                        System.out.println("  Text: " + text);
+                        System.out.println("  ---");
+                    }
+                }
+            } else {
+                System.out.println("❌ No structured content found - likely loaded via JavaScript");
+                
+                // Show some sample text to understand what we got
+                Elements textElements = doc.select("h1, h2, h3, p, span, a");
+                System.out.println("\n📄 Sample text content:");
+                int count = 0;
+                for (Element element : textElements) {
+                    String text = element.ownText().trim();
+                    if (text.length() > 15 && text.length() < 80 && count < 10) {
+                        System.out.println("  • " + text);
+                        count++;
+                    }
+                }
+            }
+            
+        } catch (Exception e) {
+            System.out.println("❌ Error: " + e.getMessage());
+        }
+    }
+}
