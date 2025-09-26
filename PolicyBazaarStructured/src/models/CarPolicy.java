@@ -1,11 +1,11 @@
 package models;
 
 public class CarPolicy implements Policy{
-	private String planType, planName, premium, logoUrl;
+	private String planType, premium, logoUrl;
 
-    public CarPolicy(String planType, String planName, String premium, String logoUrl) {
+    public CarPolicy(String planType,  String premium, String logoUrl) {
         this.planType = planType;
-        this.planName = planName;
+       
         
         this.premium = premium;
         this.logoUrl = logoUrl;
@@ -13,7 +13,7 @@ public class CarPolicy implements Policy{
 
     @Override
     public String[] toArray() {
-        return new String[]{planType, planName, premium, logoUrl};
+        return new String[]{planType, premium, logoUrl};
     }
 
 }
