@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 
 public class TestApp {
     
-    // Yeh method ek URL aur category se saare plans scrape karke list return karta hai.
+   
     public static List<HealthPolicy> scrapePoliciesFromUrl(String url, String category) {
         List<HealthPolicy> policies = new ArrayList<>();
         try {
@@ -52,41 +52,37 @@ public class TestApp {
     }
 
     public static void main(String[] args) {
-        // 1. Teeno URLs ko unki category ke saath map mein store karein.
+        
         Map<String, String> urlsToScrape = new LinkedHashMap<>();
         urlsToScrape.put("https://www.policybazaar.com/services/get_health_plan_v2.php?group_id=2", "Individual");
         urlsToScrape.put("https://www.policybazaar.com/services/get_health_plan_v2.php?group_id=3", "Family");
         urlsToScrape.put("https://www.policybazaar.com/services/get_health_plan_v2.php?group_id=1", "Senior Citizen");
         
-        // 2. Ek list banayein jisme saare scraped policies store honge.
+        
         List<HealthPolicy> allHealthPolicies = new ArrayList<>();
         
-        // 3. Har ek URL ko scrape karein aur results ko main list mein add karein.
+        
         for (Map.Entry<String, String> entry : urlsToScrape.entrySet()) {
             String url = entry.getKey();
             String category = entry.getValue();
             allHealthPolicies.addAll(scrapePoliciesFromUrl(url, category));
         }
         
-        // 4. Excel file likhne ka process shuru karein.
+        
         if (!allHealthPolicies.isEmpty()) {
             try {
                 String fileName = "InsuranceData.xlsx";
                 ExcelWriterService excelWriter = new ExcelWriterService(fileName);
 
-                // Sheets aur unke headers define karein
-                excelWriter.createSheetsWithHeader("Health Insurance", "Category", "Plan Name", "Cover Amount", "Starting Premium", "Logo URL");
-                excelWriter.createSheetsWithHeader("Term Insurance"); // Baad mein use ke liye
-                excelWriter.createSheetsWithHeader("Car Insurance");   // Baad mein use ke liye
-                excelWriter.createSheetsWithHeader("Bike Insurance");  // Baad mein use ke liye
-
-                // Scraped data ko Health Insurance sheet mein likhein
+                                excelWriter.createSheetsWithHeader("Health Insurance", "Category", "Plan Name", "Cover Amount", "Starting Premium", "Logo URL");
+               
+              
                 List<String[]> dataForExcel = allHealthPolicies.stream().map(HealthPolicy::toArray).collect(Collectors.toList());
                 excelWriter.writeDataToSheet("Health Insurance", dataForExcel);
 
-                // Workbook ko save karein
+                
                 excelWriter.saveWorkbook();
-                System.out.println("\n✅ Success! Data has been written to " + fileName);
+                
 
             } catch (Exception e) {
                 System.err.println("Error writing to Excel file: " + e.getMessage());

@@ -1,0 +1,71 @@
+package flow;
+
+import org.jsoup.Connection;
+import org.jsoup.Connection.Response;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+public class MainTestCheck {
+
+    public static void main(String[] args) {
+        String carUrl = "https://www.policybazaar.com/services/getcarservices.php";
+        String carPayload = "[{\"task\":\"topplans\",\"ismobile\":false,\"topPlanNew\":1,\"comprehensive\":1,\"plantypeid\":1}]";
+
+        try {
+    
+            Response response = Jsoup.connect(carUrl)
+                    .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64)")
+                    .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
+                    .header("Accept-Language", "en-US,en;q=0.5")
+                    .header("Content-Type", "application/x-www-form-urlencoded")
+                    .ignoreContentType(true)
+                    .timeout(15000)
+                    .requestBody(carPayload)
+                    .method(Connection.Method.POST)
+                    .execute();
+
+            
+            String jsonResponse = response.body();
+            JSONObject jsonObject = new JSONObject(jsonResponse);
+
+            
+            JSONObject planTypeWiseObject = jsonObject.getJSONObject("planTypeWiseHtml");
+
+            
+            String[] categoryKeys = {"showCard1", "showCard4", "showCard2", "showCard5"};
+
+            for (String key : categoryKeys) {
+                
+                JSONArray plansArray = planTypeWiseObject.getJSONArray(key);
+
+               
+                if (plansArray.length() > 0) {
+                    String firstPlanHtml = plansArray.getString(0);
+                    Document tempDoc = Jsoup.parse(firstPlanHtml);
+                    String categoryName = tempDoc.selectFirst(".planType .headingV3").text();
+                    System.out.println("\n--- Plans for Category: " + categoryName + " ---");
+                }
+                
+                
+                for (int i = 0; i < plansArray.length(); i++) {
+                    
+                    String singlePlanHtml = plansArray.getString(i);
+                    
+                    Document planDoc = Jsoup.parse(singlePlanHtml);
+                    
+                    
+                    String planType = planDoc.selectFirst(".planType .headingV3").text();
+                    String planPremium = planDoc.selectFirst(".planBtn .primaryBtnV2").text();
+                    String planLogo = planDoc.selectFirst(".column.logo img").attr("src");
+
+                    System.out.println("PlanType - " + planType + " | Premium - " + planPremium + " | Logo - " + planLogo);
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}

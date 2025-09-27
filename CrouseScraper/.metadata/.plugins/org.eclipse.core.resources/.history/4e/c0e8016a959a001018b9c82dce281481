@@ -1,0 +1,71 @@
+package flow;
+import org.jsoup.Connection;
+import org.jsoup.Jsoup;
+import org.jsoup.Connection.Response;
+import org.json.JSONObject;
+import org.json.JSONArray;
+
+public class MainTable {
+    public static void main(String[] args) {
+        String carUrl = "https://www.policybazaar.com/services/getcarservices.php";
+        String carPayload = "[{\"task\":\"topplans\",\"ismobile\":false,\"topPlanNew\":1,\"comprehensive\":1,\"plantypeid\":1}]";
+        
+        try {
+            Response response = Jsoup.connect(carUrl)
+                .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64)")
+                .header("Accept", "*/*")
+                .header("Accept-Language", "en-US,en;q=0.9")
+                .header("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
+                .header("X-Requested-With", "XMLHttpRequest")
+                .ignoreContentType(true)
+                .timeout(15000)
+                .requestBody(carPayload)
+                .method(Connection.Method.POST)
+                .execute();
+                
+            if (response.statusCode() == 200) {
+                String jsonResponse = response.body();
+                System.out.println("Raw Response: " + jsonResponse);
+                
+                // JSON parsing करें
+                JSONObject jsonObject = new JSONObject(jsonResponse);
+                
+                // carTopPlansHtml field access करें
+                if (jsonObject.has("carTopPlansHtml")) {
+                    String htmlContent = jsonObject.getString("carTopPlansHtml");
+                    System.out.println("HTML Content found!");
+                    
+                    // अब HTML content को parse करें
+                    org.jsoup.nodes.Document doc = Jsoup.parse(htmlContent);
+                    
+                    // Plan cards extract करें
+                    org.jsoup.select.Elements planCards = doc.select(".planCard");
+                    System.out.println("Found " + planCards.size() + " plan cards");
+                    
+                    // Each plan की details extract करें
+                    for (org.jsoup.nodes.Element card : planCards) {
+                        String planType = card.select(".planType .headingV3").text();
+                        String claimsSettled = card.select(".claim .headingV3").first() != null ? 
+                            card.select(".claim .headingV3").first().text() : "N/A";
+                        String premium = card.select(".primaryBtnV2").text();
+                        
+                        System.out.println("Plan: " + planType + ", Claims: " + claimsSettled + ", Premium: " + premium);
+                    }
+                }
+                
+                // planTypeWiseHtml भी access कर सकते हैं
+                if (jsonObject.has("planTypeWiseHtml")) {
+                    JSONObject planTypeWise = jsonObject.getJSONObject("planTypeWiseHtml");
+                    System.out.println("\nAvailable plan types: " + planTypeWise.keys());
+                }
+                
+            } else {
+                System.err.println("Request failed with status: " + response.statusCode());
+            }
+            
+        } catch (Exception e) {
+            System.err.println("Error occurred: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+}

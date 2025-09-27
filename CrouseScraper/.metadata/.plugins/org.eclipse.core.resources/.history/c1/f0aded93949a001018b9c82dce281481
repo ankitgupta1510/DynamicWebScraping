@@ -1,0 +1,62 @@
+package flow;
+
+import org.json.JSONObject;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
+public class MainTable {
+
+    public static void main(String[] args) {
+
+        String apiUrl = "https://www.policybazaar.com/services/get_health_plan_v2.php?group_id=2&show_plan_count=3&_=1758688994171";
+
+        try {
+            String jsonResponseString = Jsoup.connect(apiUrl)
+                    .ignoreContentType(true)
+                    .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+                    .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
+	                .header("Accept-Language", "en-US,en;q=0.5")
+                    .execute()
+                    .body();
+
+            JSONObject jsonResponse = new JSONObject(jsonResponseString);
+            String htmlContent = jsonResponse.getString("plan_content");
+            Document doc = Jsoup.parse(htmlContent);
+
+            
+            Elements insurerCards = doc.select("div.card");
+            int count=0;
+
+            System.out.println("--- Extracted Policy Details ---");
+
+            
+            for (Element insurerCard : insurerCards) {
+               
+                Elements individualPlans = insurerCard.select("div.card-content");
+                
+                for (Element plan : individualPlans) {
+                    String planName = plan.select("div.plan-name").text();
+
+                    if (!planName.isEmpty()) {
+                        String coverAmount = plan.select("div.cover-price > div.label-value:nth-child(1) > div.value").text();
+                        String monthlyPremium = plan.select("div.cover-price > div.label-value:nth-child(2) > div.value").text();
+                        
+                        String logoUrl = insurerCard.select("div.logo_top img").attr("src");
+
+                        System.out.println("Plan Name: " + planName);
+                        System.out.println("Cover Amount: " + coverAmount);
+                        System.out.println("Starting Premium: " + monthlyPremium);
+                        System.out.println("Logo URL: " + logoUrl);
+                        System.out.println("----------------------------------------");
+                        count++;
+                    }
+                }
+            }
+            System.out.println("total count" + count);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}

@@ -1,62 +1,58 @@
 package flow;
 
-import org.json.JSONObject;
+import org.jsoup.Connection;
+import org.jsoup.Connection.Response;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.json.JSONObject; 
 
 public class MainTable {
 
     public static void main(String[] args) {
-
-        String apiUrl = "https://www.policybazaar.com/services/get_health_plan_v2.php?group_id=2&show_plan_count=3&_=1758688994171";
+        String carUrl = "https://www.policybazaar.com/services/getcarservices.php";
+        String carPayload = "[{\"task\":\"topplans\",\"ismobile\":false,\"topPlanNew\":1,\"comprehensive\":1,\"plantypeid\":1}]";
 
         try {
-            String jsonResponseString = Jsoup.connect(apiUrl)
-                    .ignoreContentType(true)
-                    .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+            Response response = Jsoup.connect(carUrl)
+                    .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64)")
                     .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
-	                .header("Accept-Language", "en-US,en;q=0.5")
-                    .execute()
-                    .body();
+                    .header("Accept-Language", "en-US,en;q=0.5")
+                    .header("Content-Type", "application/x-www-form-urlencoded")
+                    .ignoreContentType(true) 
+                    .timeout(15000)
+                    .requestBody(carPayload)
+                    .method(Connection.Method.POST)
+                    .execute();
 
-            JSONObject jsonResponse = new JSONObject(jsonResponseString);
-            String htmlContent = jsonResponse.getString("plan_content");
-            Document doc = Jsoup.parse(htmlContent);
+           
+            String jsonResponse = response.body();
 
+            JSONObject jsonObject = new JSONObject(jsonResponse);
+    
+            JSONObject htmlContent = jsonObject.getJSONObject("planTypeWiseHtml");
+            System.out.println(htmlContent);
             
-            Elements insurerCards = doc.select("div.card");
-            int count=0;
+//            Document doc = Jsoup.parse(htmlContent);
 
-            System.out.println("--- Extracted Policy Details ---");
-
+//            Elements planCard = doc.select(".planCard");
             
-            for (Element insurerCard : insurerCards) {
-               
-                Elements individualPlans = insurerCard.select("div.card-content");
-                
-                for (Element plan : individualPlans) {
-                    String planName = plan.select("div.plan-name").text();
+            
+      
+//            for(Element card:planCard) {
+//            	String planType = card.select(".planType .headingV3").text();
+//            	String planPremium = card.select(".planBtn").text();
+//            	String planLogo = card.select(".column.logo img").attr("src");
+//            	System.out.println("PlanType - "+planType +"| Premium - "+ planPremium + "| Logo - "+ planLogo);
+//            }
+            
+            
+           
 
-                    if (!planName.isEmpty()) {
-                        String coverAmount = plan.select("div.cover-price > div.label-value:nth-child(1) > div.value").text();
-                        String monthlyPremium = plan.select("div.cover-price > div.label-value:nth-child(2) > div.value").text();
-                        
-                        String logoUrl = insurerCard.select("div.logo_top img").attr("src");
 
-                        System.out.println("Plan Name: " + planName);
-                        System.out.println("Cover Amount: " + coverAmount);
-                        System.out.println("Starting Premium: " + monthlyPremium);
-                        System.out.println("Logo URL: " + logoUrl);
-                        System.out.println("----------------------------------------");
-                        count++;
-                    }
-                }
-            }
-            System.out.println("total count" + count);
         } catch (Exception e) {
-            e.printStackTrace();
+            e.printStackTrace(); 
         }
     }
 }
