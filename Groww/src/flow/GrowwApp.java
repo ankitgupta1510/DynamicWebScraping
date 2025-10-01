@@ -10,13 +10,15 @@ import org.jsoup.nodes.Document;
 
 public class GrowwApp {
 	public static void main(String[] args) {
-		
-		List<MutualFund> fundList = new ArrayList<>();
-		
-			
-			String url = "https://groww.in/v1/api/search/v1/derived/scheme?available_for_investment=true&doc_type=scheme&max_aum=&page=1&plan_type=Direct&q=&size=15&sort_by=3\n";
 
-			
+		List<MutualFund> fundList = new ArrayList<>();
+
+		boolean flag = true;
+		int pageNo = 0;
+
+		while (flag) {
+			String url = "https://groww.in/v1/api/search/v1/derived/scheme?available_for_investment=true&doc_type=scheme&max_aum=&page="
+					+ pageNo + "&plan_type=Direct&q=&size=15&sort_by=3\n";
 
 			try {
 				String doc = Jsoup.connect(url)
@@ -30,20 +32,32 @@ public class GrowwApp {
 				for (int i = 0; i < jsonArr.length(); i++) {
 					JSONObject fund = jsonArr.getJSONObject(i);
 					String fundName = fund.getString("direct_scheme_name");
-					Double aum = fund.optDouble("aum",0);
+//					Double aum = fund.optDouble("aum", 0);
+					String aum = fund.opt("aum")!= null ? String.valueOf(fund.optDouble("aum")) :"NA";
+					
+					String logoUrl = fund.optString("logo_url", "N/A");
 //			 Double fiveYrReturn = fund.has("return5y")?fund.getDouble("return5y"):0.0;
-					Double fiveYrReturn = fund.optDouble("return5y", 0.0);
+//					Double fiveYrReturn = fund.optDouble("return5y", 0.0);
+					
+					String fiveYrReturn = fund.opt("return5y")!=null ? String.valueOf(fund.optDouble("return5y")) : "NA";
 
-					fundList.add(new MutualFund(fundName, aum, fiveYrReturn));
+					fundList.add(new MutualFund(fundName, aum, fiveYrReturn, logoUrl));
 
 				}
+				if (pageNo >= 105)
+					flag = false;
 				
+				System.out.println("Scraped page"+ pageNo +"Successfully");
+
+				pageNo++;
 				
+				Thread.sleep(2000);
+
 			} catch (Exception e) {
 				System.out.println(e.getMessage());
 			}
 
-		
+		}
 		CSVExporter.exportTocsv(fundList);
 	}
 
