@@ -16,14 +16,14 @@ public class TestApp {
                 + "?cityCode=CTGOI&language=eng&region=in&currency=INR"
                 + "&idContext=B2C&countryCode=IN&requestId=" + requestId;
 
-        String payload = 
+//        String payload = ;
         try {
         	Response res = Jsoup.connect(url)
                     .ignoreContentType(true)
                     .method(Connection.Method.POST)
                     .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36")
                     .header("Content-Type", "application/json")
-                    .requestBody(finalPayload)
+                    .requestBody(payload)
                     .timeout(60000)
                     .execute();
 
