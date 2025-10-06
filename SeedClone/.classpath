@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="src" path="java-project-seed/java-app-base/src/main/java"/>
+	<classpathentry kind="src" path="java-project-seed/java-app-spi/src/main/java"/>
+	<classpathentry kind="src" path="java-project-seed/java-app-spi/src/test/java"/>
+	<classpathentry kind="src" path="java-project-seed/java-app-spi-spring/src/main/java"/>
+	<classpathentry kind="src" path="java-project-seed/java-cloud-interface/src/main/java"/>
+	<classpathentry kind="src" path="java-project-seed/java-cloud-interface/src/test/java"/>
+	<classpathentry kind="src" path="java-project-seed/java-common-utils/src/main/java"/>
+	<classpathentry kind="src" path="java-project-seed/java-common-utils/src/test/java"/>
+	<classpathentry kind="src" path="java-project-seed/java-data-spi/src/main/java"/>
+	<classpathentry kind="src" path="java-project-seed/java-data-spi/src/test/java"/>
+	<classpathentry kind="src" path="java-project-seed/java-geo-utils/src/main/java"/>
+	<classpathentry kind="src" path="java-project-seed/java-geo-utils/src/test/java"/>
+	<classpathentry kind="src" path="java-project-seed/java-media-processor/src/main/java"/>
+	<classpathentry kind="src" path="java-project-seed/java-seed-spring-mongo/src/main/java"/>
+	<classpathentry kind="src" path="java-project-seed/java-seed-spring-mongo/src/test/java"/>
+	<classpathentry kind="src" path="java-project-seed/java-seed-spring-mysql/src/main/java"/>
+	<classpathentry kind="src" path="java-project-seed/java-seed-spring-mysql/src/test/java"/>
+	<classpathentry kind="lib" path="java-project-seed/gradle/wrapper/gradle-wrapper.jar"/>
+	<classpathentry kind="lib" path="java-project-seed/java-app-base/gradle/wrapper/gradle-wrapper.jar"/>
+	<classpathentry kind="lib" path="java-project-seed/java-app-spi/gradle/wrapper/gradle-wrapper.jar"/>
+	<classpathentry kind="lib" path="java-project-seed/java-app-spi-spring/gradle/wrapper/gradle-wrapper.jar"/>
+	<classpathentry kind="lib" path="java-project-seed/java-cloud-interface/gradle/wrapper/gradle-wrapper.jar"/>
+	<classpathentry kind="lib" path="java-project-seed/java-data-spi/gradle/wrapper/gradle-wrapper.jar"/>
+	<classpathentry kind="lib" path="java-project-seed/java-geo-utils/gradle/wrapper/gradle-wrapper.jar"/>
+	<classpathentry kind="lib" path="java-project-seed/java-media-processor/gradle/wrapper/gradle-wrapper.jar"/>
+	<classpathentry kind="lib" path="java-project-seed/java-seed-jersey/gradle/wrapper/gradle-wrapper.jar"/>
+	<classpathentry kind="lib" path="java-project-seed/java-seed-spring-mongo/gradle/wrapper/gradle-wrapper.jar"/>
+	<classpathentry kind="lib" path="java-project-seed/java-seed-spring-mysql/gradle/wrapper/gradle-wrapper.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
