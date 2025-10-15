@@ -9,15 +9,45 @@
 			<item key="DIALOG_X_ORIGIN" value="624"/>
 			<item key="DIALOG_Y_ORIGIN" value="167"/>
 			<item key="DIALOG_WIDTH" value="776"/>
-			<item key="DIALOG_HEIGHT" value="825"/>
+			<item key="DIALOG_HEIGHT" value="550"/>
 			<item key="DIALOG_FONT_NAME" value="1|Ubuntu Sans|11.0|0|GTK|1|"/>
 		</section>
 	</section>
 	<section name="WorkbenchPreferenceDialog.dialogBounds">
 		<item key="DIALOG_X_ORIGIN" value="223"/>
-		<item key="DIALOG_Y_ORIGIN" value="-37"/>
-		<item key="DIALOG_WIDTH" value="772"/>
-		<item key="DIALOG_HEIGHT" value="850"/>
+		<item key="DIALOG_Y_ORIGIN" value="0"/>
+		<item key="DIALOG_WIDTH" value="918"/>
+		<item key="DIALOG_HEIGHT" value="1000"/>
 		<item key="DIALOG_FONT_NAME" value="1|Ubuntu Sans|11.0|0|GTK|1|"/>
+	</section>
+	<section name="NewWizardAction">
+		<item key="NewWizardSelectionPage.STORE_SELECTED_ID" value="org.eclipse.buildship.ui.wizard.project.creation"/>
+		<list key="NewWizardSelectionPage.STORE_EXPANDED_CATEGORIES_ID">
+			<item value="org.eclipse.ui.Basic"/>
+			<item value="org.eclipse.jst.ejb.ui"/>
+			<item value="org.eclipse.buildship.ui.creationwizards"/>
+			<item value="org.eclipse.jst.j2ee.internal"/>
+			<item value="org.eclipse.wst.jsdt.ui.java"/>
+			<item value="org.eclipse.m2e"/>
+			<item value="org.eclipse.wst.server.ui"/>
+			<item value="org.eclipse.wst.web.ui"/>
+			<item value="org.eclipse.wst.XMLCategory"/>
+		</list>
+		<section name="NewWizard.dialogBounds">
+			<item key="DIALOG_X_ORIGIN" value="624"/>
+			<item key="DIALOG_Y_ORIGIN" value="204"/>
+			<item key="DIALOG_WIDTH" value="613"/>
+			<item key="DIALOG_HEIGHT" value="500"/>
+			<item key="DIALOG_FONT_NAME" value="1|Ubuntu Sans|11.0|0|GTK|1|"/>
+		</section>
+	</section>
+	<section name="FileSystemImportWizard">
+		<section name="FileSystemImportWizard.dialogBounds">
+			<item key="DIALOG_X_ORIGIN" value="624"/>
+			<item key="DIALOG_Y_ORIGIN" value="167"/>
+			<item key="DIALOG_WIDTH" value="776"/>
+			<item key="DIALOG_HEIGHT" value="674"/>
+			<item key="DIALOG_FONT_NAME" value="1|Ubuntu Sans|11.0|0|GTK|1|"/>
+		</section>
 	</section>
 </section>

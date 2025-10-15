@@ -1,1 +1,79 @@
-Paste stack traces into this console and follow hyperlinks to source code.
+Oct 14, 2025 11:55:33 AM org.apache.catalina.startup.VersionLoggerListener log
+INFO: Server version name:   Apache Tomcat/11.0.13
+Oct 14, 2025 11:55:33 AM org.apache.catalina.startup.VersionLoggerListener log
+INFO: Server built:          Oct 10 2025 13:57:31 UTC
+Oct 14, 2025 11:55:33 AM org.apache.catalina.startup.VersionLoggerListener log
+INFO: Server version number: 11.0.13.0
+Oct 14, 2025 11:55:33 AM org.apache.catalina.startup.VersionLoggerListener log
+INFO: OS Name:               Linux
+Oct 14, 2025 11:55:33 AM org.apache.catalina.startup.VersionLoggerListener log
+INFO: OS Version:            6.14.0-33-generic
+Oct 14, 2025 11:55:33 AM org.apache.catalina.startup.VersionLoggerListener log
+INFO: Architecture:          amd64
+Oct 14, 2025 11:55:33 AM org.apache.catalina.startup.VersionLoggerListener log
+INFO: Java Home:             /usr/lib/jvm/java-17-openjdk-amd64
+Oct 14, 2025 11:55:33 AM org.apache.catalina.startup.VersionLoggerListener log
+INFO: JVM Version:           17.0.16+8-Ubuntu-0ubuntu124.04.1
+Oct 14, 2025 11:55:33 AM org.apache.catalina.startup.VersionLoggerListener log
+INFO: JVM Vendor:            Ubuntu
+Oct 14, 2025 11:55:33 AM org.apache.catalina.startup.VersionLoggerListener log
+INFO: CATALINA_BASE:         /home/ankit/eclipse-workspace/CrouseScraper/.metadata/.plugins/org.eclipse.wst.server.core/tmp0
+Oct 14, 2025 11:55:33 AM org.apache.catalina.startup.VersionLoggerListener log
+INFO: CATALINA_HOME:         /home/ankit/Desktop/Tomcat/apache-tomcat-11.0.13
+Oct 14, 2025 11:55:33 AM org.apache.catalina.startup.VersionLoggerListener log
+INFO: Command line argument: -Dcatalina.base=/home/ankit/eclipse-workspace/CrouseScraper/.metadata/.plugins/org.eclipse.wst.server.core/tmp0
+Oct 14, 2025 11:55:33 AM org.apache.catalina.startup.VersionLoggerListener log
+INFO: Command line argument: -Dcatalina.home=/home/ankit/Desktop/Tomcat/apache-tomcat-11.0.13
+Oct 14, 2025 11:55:33 AM org.apache.catalina.startup.VersionLoggerListener log
+INFO: Command line argument: -Dwtp.deploy=/home/ankit/eclipse-workspace/CrouseScraper/.metadata/.plugins/org.eclipse.wst.server.core/tmp0/wtpwebapps
+Oct 14, 2025 11:55:33 AM org.apache.catalina.startup.VersionLoggerListener log
+INFO: Command line argument: -Djava.library.path=/home/ankit/Desktop/Tomcat/apache-tomcat-11.0.13/bin
+Oct 14, 2025 11:55:33 AM org.apache.catalina.startup.VersionLoggerListener log
+INFO: Command line argument: --enable-native-access=ALL-UNNAMED
+Oct 14, 2025 11:55:33 AM org.apache.catalina.startup.VersionLoggerListener log
+INFO: Command line argument: --add-opens=java.base/java.lang=ALL-UNNAMED
+Oct 14, 2025 11:55:33 AM org.apache.catalina.startup.VersionLoggerListener log
+INFO: Command line argument: --add-opens=java.base/java.io=ALL-UNNAMED
+Oct 14, 2025 11:55:33 AM org.apache.catalina.startup.VersionLoggerListener log
+INFO: Command line argument: --add-opens=java.base/java.util=ALL-UNNAMED
+Oct 14, 2025 11:55:33 AM org.apache.catalina.startup.VersionLoggerListener log
+INFO: Command line argument: --add-opens=java.base/java.util.concurrent=ALL-UNNAMED
+Oct 14, 2025 11:55:33 AM org.apache.catalina.startup.VersionLoggerListener log
+INFO: Command line argument: --add-opens=java.rmi/sun.rmi.transport=ALL-UNNAMED
+Oct 14, 2025 11:55:33 AM org.apache.catalina.startup.VersionLoggerListener log
+INFO: Command line argument: -Dfile.encoding=UTF-8
+Oct 14, 2025 11:55:33 AM org.apache.catalina.startup.VersionLoggerListener log
+INFO: Command line argument: -Dstdout.encoding=UTF-8
+Oct 14, 2025 11:55:33 AM org.apache.catalina.startup.VersionLoggerListener log
+INFO: Command line argument: -Dstderr.encoding=UTF-8
+Oct 14, 2025 11:55:33 AM org.apache.catalina.startup.VersionLoggerListener log
+INFO: Command line argument: -XX:+ShowCodeDetailsInExceptionMessages
+Oct 14, 2025 11:55:33 AM org.apache.catalina.core.AprLifecycleListener lifecycleEvent
+INFO: The Apache Tomcat Native library which allows using OpenSSL was not found on the java.library.path: [/home/ankit/Desktop/Tomcat/apache-tomcat-11.0.13/bin]
+Oct 14, 2025 11:55:33 AM org.apache.coyote.AbstractProtocol init
+INFO: Initializing ProtocolHandler ["http-nio-8080"]
+Oct 14, 2025 11:55:33 AM org.apache.catalina.startup.Catalina load
+INFO: Server initialization in [642] milliseconds
+Oct 14, 2025 11:55:34 AM org.apache.catalina.core.StandardService startInternal
+INFO: Starting service [Catalina]
+Oct 14, 2025 11:55:34 AM org.apache.catalina.core.StandardEngine startInternal
+INFO: Starting Servlet engine: [Apache Tomcat/11.0.13]
+Oct 14, 2025 11:55:34 AM org.apache.coyote.AbstractProtocol start
+INFO: Starting ProtocolHandler ["http-nio-8080"]
+Oct 14, 2025 11:55:34 AM org.apache.catalina.startup.Catalina start
+INFO: Server startup in [418] milliseconds
+Oct 14, 2025 11:55:41 AM org.apache.coyote.http11.Http11Processor service
+INFO: Error parsing HTTP request header
+ Note: further occurrences of HTTP request parsing errors will be logged at DEBUG level.
+java.lang.IllegalArgumentException: Invalid character found in method name [0x160x030x010x07a0x010x000x07]0x030x030x1bH0xd50xe8{0x0ep0xe70xf60xef0x100xe00x9cz0x030xf20xe0%$0x06T0x1d0xd7k0x1b0xf1EH=0x06O5 ]. HTTP method names must be tokens
+	at org.apache.coyote.http11.Http11InputBuffer.parseRequestLine(Http11InputBuffer.java:391)
+	at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:270)
+	at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:63)
+	at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:903)
+	at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1778)
+	at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:52)
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:946)
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:480)
+	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:57)
+	at java.base/java.lang.Thread.run(Thread.java:840)
+

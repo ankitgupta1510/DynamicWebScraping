@@ -1,2 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<typeInfoHistroy/>
+<typeInfoHistroy>
+    <typeInfo handle="=ieac-audit-service/\/home\/ankit\/.gradle\/caches\/modules-2\/files-2.1\/org.springframework\/spring-webmvc\/5.3.19\/ba2fc03a3bcc925458e1179ef88f5833fb1971d\/spring-webmvc-5.3.19.jar=/gradle_used_by_scope=/main,test=/=/org.eclipse.jst.component.dependency=/\/WEB-INF\/lib=/=/org.eclipse.jst.component.dependency=/\/WEB-INF\/lib=/&lt;org.springframework.web.servlet(DispatcherServlet.class[DispatcherServlet" modifiers="33" timestamp="1759319715283"/>
+    <typeInfo handle="=ieac-audit-service/\/home\/ankit\/.gradle\/caches\/modules-2\/files-2.1\/org.springframework\/spring-webmvc\/5.3.19\/ba2fc03a3bcc925458e1179ef88f5833fb1971d\/spring-webmvc-5.3.19.jar=/gradle_used_by_scope=/main,test=/=/org.eclipse.jst.component.dependency=/\/WEB-INF\/lib=/=/org.eclipse.jst.component.dependency=/\/WEB-INF\/lib=/&lt;org.springframework.web.servlet.view(InternalResourceView.class[InternalResourceView" modifiers="33" timestamp="1759319715283"/>
+</typeInfoHistroy>

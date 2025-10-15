@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <section name="Workbench">
+	<item key="hasShownOverlayPopupBefore" value="true"/>
 	<section name="java.lang.Class">
 		<item key="selection" value="script"/>
 		<item key="wrap" value="true"/>
@@ -7,7 +8,10 @@
 		<item key="wholeword" value="false"/>
 		<item key="incremental" value="false"/>
 		<item key="isRegEx" value="false"/>
+		<item key="replaceBarOpen" value="false"/>
 		<list key="findhistory">
+			<item value="app.path.dir.measurement.constants"/>
+			<item value="measurementConstantService"/>
 			<item value="script"/>
 			<item value="sch"/>
 			<item value="AAA"/>
