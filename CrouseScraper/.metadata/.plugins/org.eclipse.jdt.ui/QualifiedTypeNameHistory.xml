@@ -22,4 +22,5 @@
     <fullyQualifiedTypeName name="java.io.PrintWriter"/>
     <fullyQualifiedTypeName name="javax.servlet.ServletException"/>
     <fullyQualifiedTypeName name="java.lang.Override"/>
+    <fullyQualifiedTypeName name="javax.persistence.Entity"/>
 </qualifiedTypeNameHistroy>
