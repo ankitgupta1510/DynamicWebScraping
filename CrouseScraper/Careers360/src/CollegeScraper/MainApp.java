@@ -1,130 +1,119 @@
 package CollegeScraper;
 
+import java.io.IOException;
+import java.util.Map;
+
 import org.apache.poi.ss.usermodel.Sheet;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-import java.io.IOException;
-import java.util.Map;
+
 
 public class MainApp {
+
     public static void main(String[] args) throws IOException {
-    	
-    	ExcelExporter excelExporter = new ExcelExporter();
-    	Map<String ,String> urlMap = BrowseByStream.streamScraper();
-    	
-    	for(Map.Entry<String,String> entry : urlMap.entrySet()) {
-    		String streamName = entry.getKey();
+
+        ExcelExporter excelExporter = new ExcelExporter();
+
+        Map<String, String> urlMap = BrowseByStream.streamScraper();
+
+        for ( Map.Entry<String, String> entry : urlMap.entrySet() ) 
+        {
+            String streamName = entry.getKey();
             String urlString = entry.getValue();
-    		
- System.out.println("Processing: " + streamName);
-            
+
             Sheet sheet = excelExporter.createSheet(streamName);
-            int rowNum = 1; // Start after header
-            
-            
-        boolean hasData = true;
-        int pageNum=1;
 
-        while(hasData) {
-        	
-        	String url ="";
-        	
-        	if(urlString.equals("https://finance.careers360.com")) {
-        		url = urlString+"/colleges/list-of-commerce-colleges-in-india" + "?page="+pageNum;
-        	}
-        	else if(urlString.equals("https://hospitality.careers360.com")) {
-        		url = urlString+"/colleges/list-of-hospitality-tourism-colleges-in-india" + "?page="+pageNum;
-        		
-        		
-        	}else if(urlString.equals("https://it.careers360.com")) {
-        		
-        		url = urlString+"/colleges/list-of-bca-mca-colleges-in-india" + "?page="+pageNum;
-        		
-        		
-        	}else if(urlString.equals("https://media.careers360.com")) {
-        		url = urlString + "/colleges/list-of-media-journalism-colleges-in-india"  + "?page="+pageNum;
-        		
-        	}
-        	else {
-        		 url = urlString+"/colleges/ranking"+"?page="+pageNum;
-        	}
-        	
-        
-        
-        
-        Document doc = Jsoup.connect(url)
-                .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36")
+            int rowNum = 1;
+
+            boolean hasData = true;
+            int pageNum = 1;
+
+            while (hasData) {
+
+                String url = "";
+
+                if (urlString.equals("https://finance.careers360.com")) {
+                    url = urlString + "/colleges/list-of-commerce-colleges-in-india" + "?page=" + pageNum;
+                } else if (urlString.equals("https://hospitality.careers360.com")) {
+                    url = urlString + "/colleges/list-of-hospitality-tourism-colleges-in-india" + "?page=" + pageNum;
+                } else if (urlString.equals("https://it.careers360.com")) {
+                    url = urlString + "/colleges/list-of-bca-mca-colleges-in-india" + "?page=" + pageNum;
+                } else if (urlString.equals("https://media.careers360.com")) {
+                    url = urlString + "/colleges/list-of-media-journalism-colleges-in-india" + "?page=" + pageNum;
+                } else {
+                    url = urlString + "/colleges/ranking" + "?page=" + pageNum;
+                }
                 
-                .get();
-        
-        
-        Elements collegeCards = doc.select("div.card_block");
-        if (collegeCards.size() == 0) {
-            hasData = false;
-            System.out.println("No more data found. Ending pagination.");
-            break;
-        }
-        
-
-     System.out.println("Found " + collegeCards.size() + " colleges:");
-//        if(pageNum==1)hasData=false;
-        
-        for(Element card: collegeCards) {
-        	String collegeNameSelector ="";
-        	String ownership = "";
-        	String fees = "";
-        	
-        	if(url.equals(urlString+"/colleges/list-of-bca-mca-colleges-in-india" + "?page="+pageNum) 
-        			|| url.equals(urlString +"/colleges/list-of-hospitality-tourism-colleges-in-india" + "?page="+pageNum)
-        			|| url.equals(urlString + "/colleges/list-of-media-journalism-colleges-in-india"  + "?page="+pageNum)
-        			|| url.equals(urlString+"/colleges/list-of-commerce-colleges-in-india" + "?page="+pageNum)
-        			) {
-        		collegeNameSelector = card.select("h3.college_name").text();
-        		ownership = card.select("#college-list > div > div > div.facet-tuple-inner-container > div.left_side_tupple.w-100.listing-facet-tupple > div.tupple_top_block > div.tupple_right_block.d-none.d-lg-block > div > div > span:nth-child(1) > p.college-listing-rating").text();
-        		fees = card.select("#college-list > div > div > div.facet-tuple-inner-container > div.left_side_tupple.w-100.listing-facet-tupple > div.tupple_bottom_block > div > ul > li ").text();
-        	}else {
-        		collegeNameSelector = card.select("h3.college_name_heading").text();	
-                ownership = card.select("#college-list > div > div > div.facet-tuple-inner-container > div.left_side_tupple > div.tupple_top_block > div.tupple_right_block.d-none.d-lg-block > div > span:nth-child(2) > p.college-rank-rating").text();
-                fees = card.select("li.college-fees-text").text();
-        	}
-//        	collegeNameSelector = card.select("h3.college_name_heading").text();
-        	 
-
-//            String fees = card.select("li.college-fees-text").text();
-            
-//            String ownership = card.select("#college-list > div > div > div.facet-tuple-inner-container > div.left_side_tupple > div.tupple_top_block > div.tupple_right_block.d-none.d-lg-block > div > span:nth-child(2) > p.college-rank-rating").text();
-//            Elements collegeOwnership = doc.select(".tupple_right_block .college-rank-rating");
-            
-//            String location = collegeNameSelector.substring(collegeNameSelector.lastIndexOf(" ") + 1);
-            
-            
-            if (!collegeNameSelector.isEmpty()) {
-                String location = collegeNameSelector.substring(collegeNameSelector.lastIndexOf(" ") + 1);
+                Document doc = Jsoup.connect(url)
+                                    .userAgent("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36")
+                                    .header("cookie", "WZRK_G=f2e7755f59cf47dbb343cfca086a5caf; _gcl_au=1.1.1590437675.1764238582; _fbp=fb.1.1764238582317.406446817229918834; _gid=GA1.2.2045716678.1765259153; _clck=17uqqxu%5E2%5Eg1p%5E0%5E2157; prevPath=undefined; currentPath=%2Fcolleges%2Flist-of-commerce-colleges-in-india; common_sign_up_show=1; user-visitor-key=19b01b50e7a3fa0a; __gads=ID=c31fc4147d406a74:T=1764238628:RT=1765262246:S=ALNI_MYsjCOYvLgfanFSVy_XC3B37bu4iQ; __gpi=UID=000011bdb37dfd47:T=1764238628:RT=1765262246:S=ALNI_MYNt5oz08x-0PRGgyACvFwTqBzMBw; __eoi=ID=c4c9ee0fc7dd0da6:T=1764238628:RT=1765262246:S=AA-AfjamOp6a1kEqtJywtamoi5QF; _ga_9DWNLY4G2G=GS2.1.s1765259152$o8$g1$t1765262254$j53$l0$h0; _ga=GA1.2.462201392.1764238582; WZRK_S_47W-5KW-RZ7Z=%7B%22p%22%3A16%2C%22s%22%3A1765259152%2C%22t%22%3A1765263077%7D; _ga_GCM1JTVF8P=GS2.1.s1765259153$o8$g1$t1765263079$j55$l0$h1359909184; _clsk=190ccny%5E1765263601233%5E12%5E0%5Eh.clarity.ms%2Fcollect")
+                                    .header("accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7")
+                                    .get();
                 
-                // Write to Excel
-                excelExporter.addRow(sheet, rowNum++, collegeNameSelector, fees, ownership, location);
-                
-                // Print to console (optional)
-                System.out.println("College: " + collegeNameSelector +
-                        " || " + fees +
-                        " || Ownership: " + ownership +
-                        " || Location: " + location);
-        	}
+                if(doc == null) 
+                {
+                    System.out.println("No Document found for url" + url);
+                    return;
+                }
 
+                Elements collegeCards = doc.select("div#college-list div.card_block");
+
+                if (collegeCards.size() == 0) {
+                    hasData = false;
+                    System.out.println("No more data found. Ending pagination.");
+                    break;
+                }
+
+                for (Element card : collegeCards) {
+                    
+                    String collegeName = "";
+                    String collegeImage = "";
+                    String collegeType = "";
+
+                    if (url.equals(urlString + "/colleges/list-of-bca-mca-colleges-in-india" + "?page=" + pageNum) || 
+                            url.equals(urlString + "/colleges/list-of-hospitality-tourism-colleges-in-india"+ "?page=" + pageNum) || 
+                            url.equals(urlString + "/colleges/list-of-media-journalism-colleges-in-india" + "?page="+ pageNum) || 
+                            url.equals(urlString + "/colleges/list-of-commerce-colleges-in-india" + "?page=" + pageNum)) 
+                    {
+                        
+                        collegeName = card.select("h3.college_Name").text();
+                        System.out.println("College name: " + collegeName);
+                        
+                        collegeImage = card.select("div.image_block img").attr("src");
+                        System.out.println("College image: " + collegeImage);
+                        
+                        collegeType = card.select("p.college-listing-rating").text() + " College";
+                        System.out.println("College Type: " + collegeType);
+                        
+                    } else {
+                        
+                        collegeName = card.select("h3.college_Name").text();
+                        System.out.println("College name: " + collegeName);
+                        
+                        collegeImage = card.select("div.image_block img").attr("src");
+                        System.out.println("College image: " + collegeImage);
+                        
+                        collegeType = card.select("p.college-listing-rating").text() + " College";
+                        System.out.println("College Type: " + collegeType);
+                        
+                    }
+
+                    if (!collegeName.isEmpty())
+                        excelExporter.addRow(sheet, rowNum++, collegeType, collegeName, "", collegeImage, "");  // because the description is too long to accommodate and also their is no info for the parentInstitution
+                }
+                
+                pageNum++;
+                
+                try {
+                    Thread.sleep(1000);
+                } catch (Exception e) {
+                    System.out.println(e.getMessage());
+                }
+            }
+            
+            excelExporter.saveAndClose("new_colleges_data.xlsx");    
         }
-        	
-        }
-        
-        pageNum++;
-        try {
-			Thread.sleep(1000);
-		} catch (InterruptedException e) {
-			
-			e.printStackTrace();
-		}System.out.println("Completed " + streamName + " - Total rows: " + (rowNum - 1));
-        
-    	}  excelExporter.saveAndClose("colleges_data.xlsx");      
-    }    	
+    }
 }
