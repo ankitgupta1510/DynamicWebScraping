@@ -9,30 +9,29 @@ import org.jsoup.Jsoup;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+
 public class ScrapingLogic {
-    
-//    private static final String BASE_URL = "https://digital.dmart.in/api/v3/plp/biscuits---cookies-aesc-biscuitsandcookies";
-//    private static final String BASE_URL = "https://digital.dmart.in/api/v3/plp/snacks---farsans-aesc-snacksandfarsans";
-	private String baseURL;
+
+    private String baseURL;
     private static final int PAGE_SIZE = 40;
     private static final String STORE_ID = "10151";
-    
+
     public ScrapingLogic(String baseURL) {
-    	this.baseURL=baseURL;
+        this.baseURL = baseURL;
     }
-    
+
     public List<ProductData> scrapeAllProducts() {
         List<ProductData> allProducts = new ArrayList<>();
         int currentPage = 1;
         boolean hasMorePages = true;
-        
+
         while (hasMorePages) {
             System.out.println("Scraping page: " + currentPage);
-            
+
             try {
                 String jsonResponse = fetchPageData(currentPage);
                 List<ProductData> pageProducts = parseProductsFromJson(jsonResponse);
-                
+
                 if (pageProducts.isEmpty()) {
                     hasMorePages = false;
                     System.out.println("No more products found. Stopping.");
@@ -42,62 +41,55 @@ public class ScrapingLogic {
                     currentPage++;
                     Thread.sleep(1000);
                 }
-                
+
             } catch (Exception e) {
                 System.out.println("Error scraping page " + currentPage + ": " + e.getMessage());
                 hasMorePages = false;
             }
         }
-        
+
         return allProducts;
     }
-    
+
     private String fetchPageData(int pageNumber) throws Exception {
-        String url = baseURL + "?page=" + pageNumber + "&size=" + PAGE_SIZE + 
-                    "&channel=web&storeId=" + STORE_ID;
-        
+        String url = baseURL + "?page=" + pageNumber + "&size=" + PAGE_SIZE + "&channel=web&storeId=" + STORE_ID;
+
         Response response = Jsoup.connect(url)
-            .userAgent("Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:142.0) Gecko/20100101 Firefox/142.0")
-            .header("Accept", "application/json, text/plain, */*")
-            .header("Accept-Language", "en-US,en;q=0.5")
-            .ignoreContentType(true)
-            .method(Connection.Method.GET)
-            .execute();
-            
+                .userAgent("Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:142.0) Gecko/20100101 Firefox/142.0")
+                .header("Accept", "application/json, text/plain, */*").header("Accept-Language", "en-US,en;q=0.5")
+                .ignoreContentType(true).method(Connection.Method.GET).execute();
+
         return response.body();
     }
-    
+
     private List<ProductData> parseProductsFromJson(String jsonString) {
         List<ProductData> products = new ArrayList<>();
-        
+
         try {
             JSONObject jsonObj = new JSONObject(jsonString);
-            
+
             if (jsonObj.has("products")) {
                 JSONArray productsArray = jsonObj.getJSONArray("products");
-                
+
                 for (int i = 0; i < productsArray.length(); i++) {
                     JSONObject product = productsArray.getJSONObject(i);
-                    
+
                     String categoryName = product.optString("categoryName", "N/A");
+                    String brand = product.optString("manufacturer", "N/A");
+
                     String productName = product.optString("name", "N/A");
-                    
+                    String description = "";
+
                     JSONArray skus = product.optJSONArray("sKUs");
                     if (skus != null) {
                         for (int j = 0; j < skus.length(); j++) {
                             JSONObject sku = skus.getJSONObject(j);
-                            
-                            String variantWtStr = sku.optString("variantTextValue", "0 g")
-                                                    .replace("g", "").trim();
-                            double variantWt = parseWeight(variantWtStr);
-                            
-                            
 
-                            double priceMRP = sku.optDouble("priceMRP", 0.0);
-                            
-                            ProductData productData = new ProductData(
-                                categoryName, productName,priceMRP, variantWt
-                            );
+                            String imgUrl = "https://cdn.dmart.in/images/products/" + sku.optString("productImageKey")
+                                    + "_5_P.jpg";
+
+                            ProductData productData =
+                                    new ProductData(categoryName, productName, imgUrl, brand, description);
                             products.add(productData);
                         }
                     }
@@ -106,15 +98,8 @@ public class ScrapingLogic {
         } catch (Exception e) {
             System.out.println("Error parsing JSON: " + e.getMessage());
         }
-        
+
         return products;
     }
-    
-    private double parseWeight(String weightStr) {
-        try {
-            return Double.parseDouble(weightStr);
-        } catch (Exception e) {
-            return 0.0;
-        }
-    }
+
 }

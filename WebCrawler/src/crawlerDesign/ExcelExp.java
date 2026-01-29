@@ -39,32 +39,41 @@ public class ExcelExp {
                 
                 // Header
                 Row headerRow = sheet.createRow(0);
-                headerRow.createCell(0).setCellValue("Product Name");
-                headerRow.createCell(1).setCellValue("Weight");
-                headerRow.createCell(2).setCellValue("Price");
+                headerRow.createCell(0).setCellValue("Name");
+                headerRow.createCell(1).setCellValue("Image_URL");
+                headerRow.createCell(2).setCellValue("Brand");
+                headerRow.createCell(3).setCellValue("Product_Type");
+                headerRow.createCell(4).setCellValue("Description");
                 
                 // Data rows
                 int rowNum = 1;
                 for (ProductData product : categoryProducts) {
                     Row row = sheet.createRow(rowNum++);
                     row.createCell(0).setCellValue(product.getName());
-                    row.createCell(1).setCellValue(product.getWeight());
-                    row.createCell(2).setCellValue(product.getPriceMRP());
+                    row.createCell(1).setCellValue(product.getImgUrl());
+                    row.createCell(2).setCellValue(product.getBrand());
+                    row.createCell(3).setCellValue(product.getCategory());
+                    row.createCell(4).setCellValue(product.getDescription());
+
                 }
                 
                 // Auto-size
                 sheet.autoSizeColumn(0);
                 sheet.autoSizeColumn(1);
                 sheet.autoSizeColumn(2);
+                sheet.autoSizeColumn(3);
+
+                sheet.autoSizeColumn(4);
+
             }
             
             // Save file
-            FileOutputStream fileOut = new FileOutputStream("newproducts.xlsx");
+            FileOutputStream fileOut = new FileOutputStream("DmartProductsUpdated.xlsx");
             workbook.write(fileOut);
             fileOut.close();
             workbook.close();
             
-            System.out.println("Excel file created: newproducts.xlsx");
+            System.out.println("Excel file created: DmartProductsUpdated.xlsx");
             
         } catch (IOException e) {
             System.out.println("Exception: " + e.getMessage());
