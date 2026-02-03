@@ -1,4 +1,4 @@
-package crawlerDesign;
+package com.scrape.dmart;
 
 
 public class ProductData {

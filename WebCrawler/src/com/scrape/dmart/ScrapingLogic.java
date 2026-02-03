@@ -1,4 +1,4 @@
-package crawlerDesign;
+package com.scrape.dmart;
 
 
 import java.util.ArrayList;
@@ -39,7 +39,7 @@ public class ScrapingLogic {
                     allProducts.addAll(pageProducts);
                     System.out.println("Found " + pageProducts.size() + " products on page " + currentPage);
                     currentPage++;
-                    Thread.sleep(1000);
+                    // Thread.sleep(1000);
                 }
 
             } catch (Exception e) {

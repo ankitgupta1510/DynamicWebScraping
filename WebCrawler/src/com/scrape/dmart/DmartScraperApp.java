@@ -1,4 +1,4 @@
-package crawlerDesign;
+package com.scrape.dmart;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -30,7 +30,8 @@ public class DmartScraperApp {
 
                 allProds.addAll(products);
             }
-            ExcelExp.exportToExcel(allProds);
+            ExcelExportSingleSheet.exportToExcel(allProds);
+            BrandManager.extractNewBrands(allProds);
 
         } catch (Exception e) {
             System.out.println();
