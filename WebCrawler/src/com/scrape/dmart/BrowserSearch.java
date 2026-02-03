@@ -94,6 +94,7 @@ public class BrowserSearch {
         }
     }
 
+    // Browser (Google/Yahoo/DDG)
     private static String fetchOfficialWebsite(String brand) {
         try {
             String query = brand + "brand official website";
