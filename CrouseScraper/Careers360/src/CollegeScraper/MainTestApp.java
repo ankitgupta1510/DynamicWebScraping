@@ -81,7 +81,7 @@ public class MainTestApp {
                     String location = collegeNameSelector.substring(collegeNameSelector.lastIndexOf(" ") + 1);
                     
                     // Write to Excel
-                    excelExporter.addRow(sheet, rowNum++, collegeNameSelector, fees, ownership, location);
+                    //excelExporter.addRow(sheet, rowNum++, collegeNameSelector, fees, ownership, location);
                     
                     // Print 
                     System.out.println("College: " + collegeNameSelector +
